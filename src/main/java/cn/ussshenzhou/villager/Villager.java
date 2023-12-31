@@ -22,11 +22,10 @@ import org.slf4j.Logger;
 
 
 @Mod(Villager.MOD_ID)
-public class Villager
-{
+public class Villager {
     public static final String MOD_ID = "villager";
     private static final Logger LOGGER = LogUtils.getLogger();
-    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MOD_ID);
+    /*public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
     public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
@@ -38,18 +37,18 @@ public class Villager
             .icon(() -> EXAMPLE_ITEM.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
                 output.accept(EXAMPLE_ITEM.get());
-            }).build());
+            }).build());*/
 
-    public Villager(IEventBus modEventBus)
-    {
-        BLOCKS.register(modEventBus);
+    public Villager(IEventBus modEventBus) {
+       /*BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
-        modEventBus.addListener(this::addCreative);
+        modEventBus.addListener(this::addCreative);*/
+        ModDataAttachments.ATTACHMENT_TYPES.register(modEventBus);
     }
-    private void addCreative(BuildCreativeModeTabContentsEvent event)
+    /*private void addCreative(BuildCreativeModeTabContentsEvent event)
     {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS)
             event.accept(EXAMPLE_BLOCK_ITEM);
-    }
+    }*/
 }
