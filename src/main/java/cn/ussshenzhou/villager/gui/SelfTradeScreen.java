@@ -42,7 +42,7 @@ public class SelfTradeScreen extends TScreen {
     @Override
     public void layout() {
         inventory.resize(minecraft, width, height);
-        tradePanel.setBounds(inventory.getGuiLeft() - INVENTORY_OFFSET - 2, inventory.getGuiTop(), BUTTON_WIDTH, inventory.getYSize());
+        tradePanel.setBounds(inventory.getGuiLeft() - INVENTORY_OFFSET - 2 - 6, inventory.getGuiTop(), BUTTON_WIDTH + 6, inventory.getYSize());
         super.layout();
     }
 
@@ -70,6 +70,9 @@ public class SelfTradeScreen extends TScreen {
     @Override
     public void render(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         super.render(graphics, pMouseX, pMouseY, pPartialTick);
+        if (inventory.width == 0) {
+            return;
+        }
         graphics.pose().pushPose();
         graphics.pose().translate(INVENTORY_OFFSET, 0, 0);
         inventory.render(graphics, pMouseX - INVENTORY_OFFSET, pMouseY, pPartialTick);
@@ -82,6 +85,7 @@ public class SelfTradeScreen extends TScreen {
         super.tick();
     }
 
+    @SuppressWarnings("AlibabaLowerCamelCaseVariableNaming")
     public static void renderEntityInInventoryFollowsMouse(
             GuiGraphics p_282802_,
             int p_275688_,
@@ -102,6 +106,7 @@ public class SelfTradeScreen extends TScreen {
         SelfTradeScreen.renderEntityInInventoryFollowsAngle(p_282802_, p_275688_, p_275245_, p_275535_, p_294406_, p_294663_, p_275604_, f2, f3, p_275689_);
     }
 
+    @SuppressWarnings("AlibabaLowerCamelCaseVariableNaming")
     public static void renderEntityInInventoryFollowsAngle(
             GuiGraphics p_282802_,
             int p_275688_,
@@ -142,5 +147,8 @@ public class SelfTradeScreen extends TScreen {
         //p_282802_.disableScissor();
     }
 
-
+    @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
 }

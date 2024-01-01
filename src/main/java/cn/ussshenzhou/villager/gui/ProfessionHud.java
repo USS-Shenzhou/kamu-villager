@@ -25,7 +25,7 @@ public class ProfessionHud extends TPanel {
 
     public ProfessionHud() {
         super();
-        var profession = Minecraft.getInstance().player.getData(ModDataAttachments.PROFESSION);
+        var profession = Minecraft.getInstance().player.getData(ModDataAttachments.PROFESSION).get();
         icon = new TItem(profession.icon);
         text = new TLabel(Component.literal(profession.name));
         this.profession = profession;
@@ -50,7 +50,7 @@ public class ProfessionHud extends TPanel {
                 hidePickProfessionHint();
                 return;
             }
-            pickHint.setText(Component.literal("按下 V 选取职业：" + p.name));
+            pickHint.setText(Component.literal("按下 R 选取职业：" + p.name));
             pickHint.setVisibleT(true);
             icon.setVisibleT(false);
             text.setVisibleT(false);
@@ -66,7 +66,7 @@ public class ProfessionHud extends TPanel {
     @Override
     public void tickT() {
         super.tickT();
-        var p = Minecraft.getInstance().player.getData(ModDataAttachments.PROFESSION);
+        var p = Minecraft.getInstance().player.getData(ModDataAttachments.PROFESSION).get();
         if (profession != p) {
             icon.setItem(new ItemStack(p.icon));
             text.setText(Component.literal(p.name));
@@ -84,7 +84,7 @@ public class ProfessionHud extends TPanel {
 
     @Override
     public void resizeAsHud(int screenWidth, int screenHeight) {
-        this.setAbsBounds(screenWidth / 2 - 80 / 2, (int) (screenHeight * 0.7), 80, HEIGHT);
+        this.setAbsBounds(screenWidth / 2 - 80 / 2, (int) (screenHeight * 0.65), 80, HEIGHT);
         super.resizeAsHud(screenWidth, screenHeight);
     }
 }

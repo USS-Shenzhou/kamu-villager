@@ -51,6 +51,8 @@ public class ClientForgeBusListener {
         if (professionHud == null) {
             professionHud = new ProfessionHud();
             HudManager.add(professionHud);
+        } else {
+            HudManager.addIfSameClassNotExist(professionHud);
         }
         var level = Minecraft.getInstance().level;
         var blockHit = player.pick(4, 0, false);

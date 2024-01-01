@@ -66,6 +66,9 @@ public class ChooseProfessionPacket {
 
     @OnlyIn(Dist.CLIENT)
     public void clientHandler() {
-        //Minecraft.getInstance().player.setData(ModDataAttachments.PROFESSION, profession);
+        var player = Minecraft.getInstance().player;
+        if (player.getUUID().equals(this.player)) {
+            player.setData(ModDataAttachments.PROFESSION, profession);
+        }
     }
 }

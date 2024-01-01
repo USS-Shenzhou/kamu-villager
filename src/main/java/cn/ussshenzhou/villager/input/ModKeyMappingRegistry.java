@@ -14,5 +14,6 @@ public class ModKeyMappingRegistry {
     @SubscribeEvent
     public static void onClientSetup(RegisterKeyMappingsEvent event) {
         event.register(KeyInputListener.SELF_TRADE);
+        event.register(KeyInputListener.COMMAND);
     }
 }

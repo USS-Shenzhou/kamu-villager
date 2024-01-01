@@ -1,10 +1,13 @@
 package cn.ussshenzhou.villager;
 
 import cn.ussshenzhou.villager.gui.ProfessionHud;
+import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
 
@@ -12,7 +15,7 @@ import javax.annotation.Nullable;
  * @author USS_Shenzhou
  */
 
-public enum Profession {
+public enum Profession implements INBTSerializable<CompoundTag> {
     NITWIT(Items.KNOWLEDGE_BOOK, "傻子"),
     ARMORER(Items.IRON_CHESTPLATE, "盔甲匠"),
     BUTCHER(Items.PORKCHOP, "屠夫"),
@@ -47,5 +50,35 @@ public enum Profession {
             return WEAPON_SMITH;
         }
         return null;
+    }
+
+    private Profession thiz;
+
+    @Override
+    public CompoundTag serializeNBT() {
+        var t = new CompoundTag();
+        t.putInt("profession", this.ordinal());
+        return t;
+    }
+
+    @Override
+    public void deserializeNBT(CompoundTag nbt) {
+        Profession thiz = Profession.values()[nbt.getInt("profession")];
+        this.thiz = thiz;
+    }
+
+    public Profession get() {
+        if (thiz == null) {
+            thiz = NITWIT;
+            return NITWIT;
+        } else {
+            thiz = this;
+            return this;
+        }
+
+    }
+
+    public void set(Profession profession) {
+        thiz = profession;
     }
 }

@@ -1,10 +1,8 @@
 package cn.ussshenzhou.villager.input;
 
-import cn.ussshenzhou.t88.gui.HudManager;
 import cn.ussshenzhou.t88.network.NetworkHelper;
 import cn.ussshenzhou.villager.ModDataAttachments;
 import cn.ussshenzhou.villager.Profession;
-import cn.ussshenzhou.villager.gui.ProfessionHud;
 import cn.ussshenzhou.villager.gui.SelfTradeScreen;
 import cn.ussshenzhou.villager.network.ChooseProfessionPacket;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -31,11 +29,11 @@ import static cn.ussshenzhou.villager.ClientForgeBusListener.WORK_BLOCKS;
 @Mod.EventBusSubscriber(value = Dist.CLIENT)
 public class KeyInputListener {
     public static final KeyMapping SELF_TRADE = new KeyMapping(
-            "自体交易", KeyConflictContext.IN_GAME, KeyModifier.NONE,
+            "自体交易/选取职业", KeyConflictContext.IN_GAME, KeyModifier.NONE,
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, "我是村民"
     );
-    public static final KeyMapping PICK_PROFESSION_OR_COMMAND = new KeyMapping(
-            "选取职业/指挥", KeyConflictContext.IN_GAME, KeyModifier.NONE,
+    public static final KeyMapping COMMAND = new KeyMapping(
+            "指挥", KeyConflictContext.IN_GAME, KeyModifier.NONE,
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, "我是村民"
     );
 
@@ -43,12 +41,12 @@ public class KeyInputListener {
     public static void onKeyInput(InputEvent.Key event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (SELF_TRADE.consumeClick()) {
-            minecraft.setScreen(new SelfTradeScreen());
-        }
-        if (PICK_PROFESSION_OR_COMMAND.consumeClick()) {
             if (!tryPickProfession()) {
-                //TODO
+                minecraft.setScreen(new SelfTradeScreen());
             }
+        }
+        if (COMMAND.consumeClick()) {
+
         }
     }
 
@@ -64,10 +62,11 @@ public class KeyInputListener {
             var block = level.getBlockState(blockpos).getBlock();
             if (WORK_BLOCKS.contains(block)) {
                 var p = Profession.fromBlock(block);
-                if (p != player.getData(ModDataAttachments.PROFESSION)) {
+                if (p != player.getData(ModDataAttachments.PROFESSION).get()) {
                     NetworkHelper.sendToServer(new ChooseProfessionPacket(player, p));
                     var mc = Minecraft.getInstance();
                     mc.player.setData(ModDataAttachments.PROFESSION, p);
+                    mc.player.getData(ModDataAttachments.PROFESSION).set(p);
                     mc.level.playLocalSound(mc.player, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1, 1);
                     return true;
                 }
