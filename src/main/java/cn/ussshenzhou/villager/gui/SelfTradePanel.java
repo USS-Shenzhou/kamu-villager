@@ -88,15 +88,18 @@ public class SelfTradePanel extends TScrollContainer {
             }
             case CLERIC -> {
                 InventoryHelper.getAllAsStream(inventory)
-                        .map(ItemStack::getItem)
-                        .filter(item -> item instanceof PotionItem)
-                        .distinct()
-                        .forEach(item -> add(new SelfTradeButton(new ItemStack(item, 1), new ItemStack(Items.EMERALD, 6))));
-                add(new SelfTradeButton(new ItemStack(Items.EMERALD, 6), new ItemStack(Items.GOLDEN_CARROT, 1)));
-                add(new SelfTradeButton(new ItemStack(Items.EMERALD, 6), new ItemStack(Items.GOLDEN_APPLE, 1)));
+                        .filter(itemStack -> itemStack.getItem() instanceof PotionItem)
+                        .forEach(item -> add(new SelfTradeOnceButton(item.copy(), new ItemStack(Items.EMERALD, 6))));
+                var b = new SelfTradeButton(new ItemStack(Items.EMERALD, 8), new ItemStack(Items.GOLDEN_CARROT, 1));
+                if (HXYAHelper.isUncle(player)) {
+                    b.from.getItem().setCount(4);
+                    b.setTooltip(Tooltip.create(Component.literal("咬不动所以大甩卖！\n§7只有你能进行此交易。")));
+                }
+                add(b);
+                add(new SelfTradeButton(new ItemStack(Items.EMERALD, 8), new ItemStack(Items.GOLDEN_APPLE, 1)));
                 if (HXYAHelper.isKaMu(player)) {
                     add(new SelfTradeButton(new ItemStack(Items.EMERALD, 6), GeneralForgeBusListener.LAVA_BOTTLE.copy())
-                            .setTooltip(Tooltip.create(Component.literal("您好，外卖！")))
+                            .setTooltip(Tooltip.create(Component.literal("您好，外卖！\n§7只有你能进行此交易。")))
                     );
                 }
             }
@@ -110,13 +113,11 @@ public class SelfTradePanel extends TScrollContainer {
                             if (item == Items.CARROT) {
                                 if (HXYAHelper.isUncle(player)) {
                                     add(new SelfTradeButton(new ItemStack(Items.CARROT, 4), new ItemStack(Items.EMERALD, 1))
-                                            .setTooltip(Tooltip.create(Component.literal("胡萝卜垄断！")))
+                                            .setTooltip(Tooltip.create(Component.literal("胡萝卜垄断！\n§7只有你能进行此交易。")))
                                     );
-                                } else {
-                                    return;
                                 }
+                                return;
                             }
-
                             var food = item.getFoodProperties(new ItemStack(item), null);
                             if (food == null) {
                                 return;
@@ -132,7 +133,7 @@ public class SelfTradePanel extends TScrollContainer {
                 add(new SelfTradeButton(new ItemStack(Items.EMERALD, 1), new ItemStack(Items.POTATO, 1)));
                 if (HXYAHelper.isUncle(player)) {
                     add(new SelfTradeButton(new ItemStack(Items.EMERALD, 1), new ItemStack(Items.CARROT, 4))
-                            .setTooltip(Tooltip.create(Component.literal("家里有很多胡萝卜很正常吧。")))
+                            .setTooltip(Tooltip.create(Component.literal("家里有很多胡萝卜很正常吧。\n§7只有你能进行此交易。")))
                     );
                 }
             }
@@ -146,6 +147,11 @@ public class SelfTradePanel extends TScrollContainer {
                         });
                 add(new SelfTradeButton(new ItemStack(Items.EMERALD, 16), new ItemStack(ModItems.BOW.get())));
                 add(new SelfTradeButton(new ItemStack(Items.EMERALD, 4), new ItemStack(Items.ARROW, 16)));
+                if (HXYAHelper.isHeiMao(player)) {
+                    add(new SelfTradeButton(new ItemStack(Items.EMERALD, 64), GeneralForgeBusListener.MAO_BOW.copy())
+                            .setTooltip(Tooltip.create(Component.literal("大眼睛神射手！\n§7只有你能进行此交易。")))
+                    );
+                }
             }
             case TOOL_SMITH -> {
                 InventoryHelper.getAllAsStream(inventory)
@@ -170,7 +176,7 @@ public class SelfTradePanel extends TScrollContainer {
                 add(new SelfTradeButton(new ItemStack(Items.EMERALD, 48), new ItemStack(ModItems.NETHERITE_TOOL.get())));
                 if (HXYAHelper.isHeiMao(player)) {
                     add(new SelfTradeButton(new ItemStack(Items.EMERALD, 64), GeneralForgeBusListener.MAO_SHOVEL.copy())
-                            .setTooltip(Tooltip.create(Component.literal("钻石铲子！\n只有你能进行此交易。")))
+                            .setTooltip(Tooltip.create(Component.literal("钻石铲子！\n§7只有你能进行此交易。")))
                     );
                 }
             }
@@ -197,7 +203,12 @@ public class SelfTradePanel extends TScrollContainer {
                 add(new SelfTradeButton(new ItemStack(Items.EMERALD, 48), new ItemStack(ModItems.NETHERITE_WEAPON.get())));
                 if (HXYAHelper.isCen(player)) {
                     add(new SelfTradeButton(new ItemStack(Items.EMERALD, 64), GeneralForgeBusListener.CEN_AXE.copy())
-                            .setTooltip(Tooltip.create(Component.literal("钻石斧杀人魔！\n只有你能进行此交易。")))
+                            .setTooltip(Tooltip.create(Component.literal("钻石斧杀人魔！\n§7只有你能进行此交易。")))
+                    );
+                }
+                if (HXYAHelper.isMelor(player)) {
+                    add(new SelfTradeButton(new ItemStack(Items.EMERALD, 64), GeneralForgeBusListener.MELOR_SWORD.copy())
+                            .setTooltip(Tooltip.create(Component.literal("《方块杯空岛冠军》\n§7只有你能进行此交易。\n§8本来想给个茄子的但是懒得画。")))
                     );
                 }
             }

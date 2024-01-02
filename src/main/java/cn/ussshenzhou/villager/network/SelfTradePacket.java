@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.neoforged.fml.LogicalSide;
@@ -61,7 +62,7 @@ public class SelfTradePacket {
             return;
         }
         var inventory = player.getInventory();
-        if (from.is(Tags.Items.ARMORS) || from.is(Tags.Items.TOOLS)) {
+        if (from.is(Tags.Items.ARMORS) || from.is(Tags.Items.TOOLS) || from.getItem() instanceof PotionItem) {
             //sell equipments
             if (InventoryHelper.consumeExact(inventory, from)) {
                 tryAdd(player, to);

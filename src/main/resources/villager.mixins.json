@@ -5,10 +5,9 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "t88.refmap.json",
   "mixins": [
-
+    "BowItemMixin"
   ],
   "client": [
-
   ],
   "injectors": {
     "defaultRequire": 1

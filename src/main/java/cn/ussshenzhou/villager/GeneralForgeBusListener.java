@@ -1,6 +1,7 @@
 package cn.ussshenzhou.villager;
 
 import cn.ussshenzhou.t88.network.NetworkHelper;
+import cn.ussshenzhou.t88.util.InventoryHelper;
 import cn.ussshenzhou.villager.item.ModItems;
 import cn.ussshenzhou.villager.network.ChooseProfessionPacket;
 import net.minecraft.nbt.CompoundTag;
@@ -11,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.GameRules;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
@@ -23,13 +25,6 @@ import java.util.List;
  */
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class GeneralForgeBusListener {
-
-    /*@SubscribeEvent
-    public static void onPlayerDeath(PlayerEvent.Clone event) {
-        if (event.isWasDeath() && event.getOriginal().hasData(ModDataAttachments.PROFESSION)) {
-            event.getEntity().setData(ModDataAttachments.PROFESSION, event.getOriginal().getData(ModDataAttachments.PROFESSION).get());
-        }
-    }*/
 
     @SubscribeEvent
     public static void onPlayerCreate(PlayerEvent.PlayerLoggedInEvent event) {
@@ -58,15 +53,22 @@ public class GeneralForgeBusListener {
             var list = new ListTag();
             var c = new CompoundTag();
             c.putBoolean("ambient", false);
-            c.putByte("amplifier", (byte) 1);
+            c.putByte("amplifier", (byte) 2);
             c.putInt("duration", 400);
-            c.putString("id","minecraft:regeneration");
+            c.putString("id", "minecraft:regeneration");
             c.putBoolean("show_icon", true);
             c.putBoolean("show_particles", true);
             list.add(c);
+            var f = new CompoundTag();
+            f.putBoolean("ambient", false);
+            f.putByte("amplifier", (byte) 0);
+            f.putInt("duration", 800);
+            f.putString("id", "minecraft:fire_resistance");
+            f.putBoolean("show_icon", true);
+            f.putBoolean("show_particles", true);
+            list.add(f);
             LAVA_BOTTLE.setHoverName(Component.literal("一小瓶热腾腾的饮料"));
             LAVA_BOTTLE.getOrCreateTag().put("custom_potion_effects", list);
-            LAVA_BOTTLE.getOrCreateTag().putString("Potion","minecraft:fire_resistance");
         }
     }
 
@@ -88,16 +90,45 @@ public class GeneralForgeBusListener {
     static {
         MAO_SHOVEL.enchant(Enchantments.BLOCK_FORTUNE, 4);
         MAO_SHOVEL.enchant(Enchantments.BLOCK_EFFICIENCY, 6);
-        CEN_AXE.getOrCreateTag().putBoolean("Unbreakable", true);
+        MAO_SHOVEL.getOrCreateTag().putBoolean("Unbreakable", true);
         var l = new ListTag();
         l.add(StringTag.valueOf("不可丢出"));
         var c = new CompoundTag();
         c.put("Lore", l);
-        CEN_AXE.getOrCreateTag()
+        MAO_SHOVEL.getOrCreateTag()
+                .put("display", c);
+        MAO_SHOVEL.setHoverName(Component.literal("钻石铲子"));
+    }
+
+    public static final ItemStack MAO_BOW = new ItemStack(Items.BOW);
+
+    static {
+        MAO_BOW.enchant(Enchantments.SOUL_SPEED, 1);
+        MAO_BOW.getOrCreateTag().putBoolean("Unbreakable", true);
+        var l = new ListTag();
+        l.add(StringTag.valueOf("在主手时：射击扩散-80%"));
+        l.add(StringTag.valueOf("不可丢出"));
+        var c = new CompoundTag();
+        c.put("Lore", l);
+        MAO_BOW.getOrCreateTag()
                 .put("display", c);
     }
 
-    private static final List<ItemStack> UNDROPPABLE = List.of(CEN_AXE, MAO_SHOVEL);
+    public static final ItemStack MELOR_SWORD = new ItemStack(Items.DIAMOND_SWORD);
+
+    static {
+        MELOR_SWORD.enchant(Enchantments.MOB_LOOTING, 4);
+        MELOR_SWORD.enchant(Enchantments.SHARPNESS, 6);
+        MELOR_SWORD.getOrCreateTag().putBoolean("Unbreakable", true);
+        var l = new ListTag();
+        l.add(StringTag.valueOf("不可丢出"));
+        var c = new CompoundTag();
+        c.put("Lore", l);
+        MELOR_SWORD.getOrCreateTag()
+                .put("display", c);
+    }
+
+    private static final List<ItemStack> UNDROPPABLE = List.of(CEN_AXE, MAO_SHOVEL, MAO_BOW, MELOR_SWORD);
 
     @SubscribeEvent
     public static void unDroppableItem(ItemTossEvent event) {
@@ -115,5 +146,18 @@ public class GeneralForgeBusListener {
             }
         }
         return false;
+    }
+
+    @SubscribeEvent
+    public static void onPlayerDeath(PlayerEvent.Clone event) {
+        if (event.isWasDeath()) {
+            var old = event.getOriginal();
+            var nev = event.getEntity();
+            if (!nev.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
+                InventoryHelper.getAllAsStream(old.getInventory())
+                        .filter(itemStack -> UNDROPPABLE.stream().anyMatch(undroppable -> ItemStack.isSameItemSameTags(undroppable, itemStack)))
+                        .forEach(nev::addItem);
+            }
+        }
     }
 }

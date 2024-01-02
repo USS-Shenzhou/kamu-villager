@@ -132,6 +132,12 @@ tasks.withType(ProcessResources).configureEach {
     }
 }
 
+minecraft {
+    accessTransformers {
+        file('src/main/resources/META-INF/accesstransformer.cfg')
+    }
+}
+
 subsystems {
     parchment {
         // The Minecraft version for which the Parchment mappings were created.

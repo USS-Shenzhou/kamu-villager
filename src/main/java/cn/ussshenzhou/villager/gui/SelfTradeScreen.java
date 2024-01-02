@@ -1,11 +1,20 @@
 package cn.ussshenzhou.villager.gui;
 
 import cn.ussshenzhou.t88.gui.screen.TScreen;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -18,6 +27,12 @@ public class SelfTradeScreen extends TScreen {
     private static final int INVENTORY_OFFSET = BUTTON_WIDTH / 2;
 
     private final InventoryScreen inventory = new InventoryScreen(minecraft.player) {
+        @Override
+        protected void init() {
+            super.init();
+            this.children().stream().filter(renderable -> renderable instanceof ImageButton).findFirst().ifPresent(this::removeWidget);
+        }
+
         @Override
         public void renderBackground(GuiGraphics p_295206_, int p_295457_, int p_294596_, float p_296351_) {
             this.renderBg(p_295206_, p_296351_, p_295457_, p_294596_);
