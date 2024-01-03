@@ -5,8 +5,10 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "t88.refmap.json",
   "mixins": [
+    "BedBlockMixin",
     "BowItemMixin",
-    "InventoryMixin"
+    "InventoryMixin",
+    "ServerPlayerMixin"
   ],
   "client": [
   ],

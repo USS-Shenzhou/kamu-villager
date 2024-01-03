@@ -9,16 +9,33 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.SpawnData;
+import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerSleepInBedEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
+import net.neoforged.neoforge.event.entity.player.SleepingTimeCheckEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author USS_Shenzhou
@@ -39,6 +56,46 @@ public class GeneralForgeBusListener {
         if (!player.level().isClientSide) {
             NetworkHelper.sendToPlayer((ServerPlayer) player, new ChooseProfessionPacket(player, player.getData(ModDataAttachments.PROFESSION).get()));
         }
+    }
+
+    private static final MobSpawnSettings.SpawnerData PILLAGER = new MobSpawnSettings.SpawnerData(EntityType.PILLAGER, 40, 1, 3);
+    private static final MobSpawnSettings.SpawnerData VINDICATOR = new MobSpawnSettings.SpawnerData(EntityType.VINDICATOR, 70, 1, 3);
+
+    @SubscribeEvent
+    public static void addSpawnEntity(LevelEvent.PotentialSpawns event) {
+        if (event.getMobCategory() != MobCategory.MONSTER) {
+            return;
+        }
+        event.addSpawnerData(PILLAGER);
+        event.addSpawnerData(VINDICATOR);
+    }
+
+    @SubscribeEvent
+    public static void onWakeUp(PlayerWakeUpEvent event) {
+        var playerA = event.getEntity();
+        var level = playerA.level();
+        if (level.isClientSide) {
+            return;
+        }
+        var playerB = level.getNearbyPlayers(TargetingConditions.DEFAULT, playerA, playerA.getBoundingBox().inflate(1.9))
+                .stream()
+                .filter(player -> player != playerA)
+                .findFirst()
+                .orElse(null);
+        if (playerB == null || !playerB.isSleeping()) {
+            return;
+        }
+        playerB.stopSleeping();
+        var pos = playerB.getPosition(1);
+        var villager = new Villager(EntityType.VILLAGER, level);
+        villager.finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(playerB.blockPosition()), MobSpawnType.BREEDING, null, null);
+        villager.setPos(pos);
+        level.addFreshEntity(villager);
+    }
+
+    @SubscribeEvent
+    public static void sleepAnyTime(SleepingTimeCheckEvent event) {
+        event.setResult(Event.Result.ALLOW);
     }
 
     //-----Eastern Eggs-----
