@@ -70,6 +70,7 @@ public class VillagerArmorLayer extends RenderLayer<Player, VillagerModel<Player
     }
 
     private void renderGlint(float pPartialTick, Player player, EquipmentSlot slot, PoseStack poseStack, MultiBufferSource multiBufferSource, int light) {
+        //FIXME
         armorModel.render(pPartialTick, player, slot, poseStack, multiBufferSource.getBuffer(RenderType.armorEntityGlint()), light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
     }
 }
