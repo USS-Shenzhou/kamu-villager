@@ -34,12 +34,12 @@ public class VillagerPlayerRenderer extends LivingEntityRenderer<Player, Village
      */
     @Override
     public ResourceLocation getTextureLocation(Player player) {
-        if (HXYAHelper.isHeiMao(player)) {
-            return MAO;
+        if (HXYAHelper.isCen(player)) {
+            return CEN;
         } else if (HXYAHelper.isUncle(player)) {
             return UNCLE;
-        } else if (HXYAHelper.isCen(player)) {
-            return CEN;
+        } else if (HXYAHelper.isHeiMao(player)) {
+            return MAO;
         } else if (HXYAHelper.isMelor(player)) {
             return MELOR;
         }

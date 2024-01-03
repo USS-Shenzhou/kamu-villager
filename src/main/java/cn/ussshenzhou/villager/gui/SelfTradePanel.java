@@ -92,7 +92,7 @@ public class SelfTradePanel extends TScrollContainer {
                         .forEach(item -> add(new SelfTradeOnceButton(item.copy(), new ItemStack(Items.EMERALD, 6))));
                 var b = new SelfTradeButton(new ItemStack(Items.EMERALD, 8), new ItemStack(Items.GOLDEN_CARROT, 1));
                 if (HXYAHelper.isUncle(player)) {
-                    b.from.getItem().setCount(4);
+                    b.from.setItem(new ItemStack(Items.EMERALD, 4));
                     b.setTooltip(Tooltip.create(Component.literal("咬不动所以大甩卖！\n§7只有你能进行此交易。")));
                 }
                 add(b);

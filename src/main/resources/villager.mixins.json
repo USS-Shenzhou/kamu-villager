@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "t88.refmap.json",
   "mixins": [
-    "BowItemMixin"
+    "BowItemMixin",
+    "InventoryMixin"
   ],
   "client": [
   ],

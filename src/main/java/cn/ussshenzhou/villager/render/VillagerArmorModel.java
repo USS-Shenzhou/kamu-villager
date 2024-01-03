@@ -28,7 +28,7 @@ public class VillagerArmorModel extends EntityModel<Player> {
     public static LayerDefinition createBodyLayer() {
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
-        partdefinition.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -34.0F, -4.0F, 8.0F, 10.0F, 8.0F, new CubeDeformation(0.75F)), PartPose.offset(0.0F, 24.0F, 0.0F));
+        partdefinition.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8.0F, 10.0F, 8.0F, new CubeDeformation(0.75F)), PartPose.ZERO);
         partdefinition.addOrReplaceChild("chestplate", CubeListBuilder.create().texOffs(0, 19).addBox(-4.0F, -23.0F, -3.0F, 8.0F, 10.0F, 6.0F, new CubeDeformation(0.75F)), PartPose.offset(0.0F, 24.0F, 0.0F));
         partdefinition.addOrReplaceChild("leggings", CubeListBuilder.create().texOffs(27, 13).addBox(-4.0F, -11.5F, -3.0F, 8.0F, 4.0F, 6.0F, new CubeDeformation(0.75F)), PartPose.offset(0.0F, 24.0F, 0.0F));
         partdefinition.addOrReplaceChild("boots", CubeListBuilder.create().texOffs(29, 24).addBox(-4.0F, -6.0F, -3.0F, 8.0F, 2.0F, 6.0F, new CubeDeformation(0.75F)), PartPose.offset(0.0F, 24.0F, 0.0F));
@@ -50,12 +50,8 @@ public class VillagerArmorModel extends EntityModel<Player> {
         }
         poseStack.pushPose();
         if (slot == EquipmentSlot.HEAD) {
-            poseStack.mulPose(new Quaternionf().rotateXYZ(
-                    //fixme
-                    (float) (player.getViewXRot(partialTick) / 180 * Math.PI),
-                    (float) (Mth.lerp(partialTick, player.yHeadRotO, player.getYHeadRot()) / 180 * Math.PI),
-                    0
-            ));
+            this.head.xRot = (float) (player.getViewXRot(partialTick) / 180 * Math.PI);
+            this.head.yRot=(float) (Mth.lerp(partialTick, player.yHeadRotO - player.yBodyRotO, player.yHeadRot - player.yBodyRot) / 180 * Math.PI);
         }
         var toRender = switch (slot) {
             case CHEST -> chestplate;

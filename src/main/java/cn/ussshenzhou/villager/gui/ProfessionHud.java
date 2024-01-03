@@ -7,6 +7,7 @@ import cn.ussshenzhou.t88.gui.widegt.TLabel;
 import cn.ussshenzhou.t88.gui.widegt.TPanel;
 import cn.ussshenzhou.villager.ModDataAttachments;
 import cn.ussshenzhou.villager.Profession;
+import cn.ussshenzhou.villager.input.KeyInputListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -50,7 +51,8 @@ public class ProfessionHud extends TPanel {
                 hidePickProfessionHint();
                 return;
             }
-            pickHint.setText(Component.literal("按下 R 选取职业：" + p.name));
+            String key = KeyInputListener.SELF_TRADE.getKeyModifier().getCombinedName(KeyInputListener.SELF_TRADE.getKey(), () -> KeyInputListener.SELF_TRADE.getKey().getDisplayName()).getString();
+            pickHint.setText(Component.literal("按下 " + key + " 选取职业：" + p.name));
             pickHint.setVisibleT(true);
             icon.setVisibleT(false);
             text.setVisibleT(false);

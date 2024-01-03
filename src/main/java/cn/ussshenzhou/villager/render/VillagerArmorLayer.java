@@ -57,8 +57,8 @@ public class VillagerArmorLayer extends RenderLayer<Player, VillagerModel<Player
     }
 
     public static final ResourceLocation IRON_ARMOR = new ResourceLocation(Villager.MOD_ID, "textures/entity/iron_armor.png");
-    public static final ResourceLocation DIAMOND_ARMOR = new ResourceLocation(Villager.MOD_ID, "textures/entity/diamond.png");
-    public static final ResourceLocation NETHERITE_ARMOR = new ResourceLocation(Villager.MOD_ID, "textures/entity/netherite.png");
+    public static final ResourceLocation DIAMOND_ARMOR = new ResourceLocation(Villager.MOD_ID, "textures/entity/diamond_armor.png");
+    public static final ResourceLocation NETHERITE_ARMOR = new ResourceLocation(Villager.MOD_ID, "textures/entity/netherite_armor.png");
 
     private static ResourceLocation getTexture(ArmorItem item) {
         return switch ((ArmorMaterials) item.getMaterial()) {

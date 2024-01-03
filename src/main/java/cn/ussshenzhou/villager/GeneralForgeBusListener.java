@@ -128,7 +128,7 @@ public class GeneralForgeBusListener {
                 .put("display", c);
     }
 
-    private static final List<ItemStack> UNDROPPABLE = List.of(CEN_AXE, MAO_SHOVEL, MAO_BOW, MELOR_SWORD);
+    public static final List<ItemStack> UNDROPPABLE = List.of(CEN_AXE, MAO_SHOVEL, MAO_BOW, MELOR_SWORD);
 
     @SubscribeEvent
     public static void unDroppableItem(ItemTossEvent event) {
