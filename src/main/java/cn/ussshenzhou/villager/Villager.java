@@ -1,5 +1,6 @@
 package cn.ussshenzhou.villager;
 
+import cn.ussshenzhou.villager.entity.ModEntityTypes;
 import cn.ussshenzhou.villager.item.ModItems;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.Registries;
@@ -33,5 +34,6 @@ public class Villager {
     public Villager(IEventBus modEventBus) {
         ModDataAttachments.ATTACHMENT_TYPES.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
+        ModEntityTypes.ENTITY_TYPE.register(modEventBus);
     }
 }
