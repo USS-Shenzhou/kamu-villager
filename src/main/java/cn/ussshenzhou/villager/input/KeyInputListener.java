@@ -3,9 +3,11 @@ package cn.ussshenzhou.villager.input;
 import cn.ussshenzhou.t88.network.NetworkHelper;
 import cn.ussshenzhou.villager.ModDataAttachments;
 import cn.ussshenzhou.villager.Profession;
+import cn.ussshenzhou.villager.gui.CommandScreen;
 import cn.ussshenzhou.villager.gui.SelfTradeScreen;
 import cn.ussshenzhou.villager.network.ChooseProfessionPacket;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.logging.LogUtils;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -17,6 +19,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.client.settings.KeyModifier;
 import org.lwjgl.glfw.GLFW;
@@ -33,7 +36,7 @@ public class KeyInputListener {
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, "我是村民"
     );
     public static final KeyMapping COMMAND = new KeyMapping(
-            "指挥", KeyConflictContext.IN_GAME, KeyModifier.NONE,
+            "指挥", KeyConflictContext.UNIVERSAL, KeyModifier.NONE,
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, "我是村民"
     );
 
@@ -46,7 +49,9 @@ public class KeyInputListener {
             }
         }
         if (COMMAND.consumeClick()) {
-
+            if (minecraft.screen == null) {
+                minecraft.setScreen(new CommandScreen());
+            }
         }
     }
 

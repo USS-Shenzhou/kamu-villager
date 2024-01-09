@@ -1,0 +1,101 @@
+package cn.ussshenzhou.villager.gui;
+
+import cn.ussshenzhou.t88.gui.advanced.THoverSensitiveImageButton;
+import cn.ussshenzhou.t88.gui.screen.TScreen;
+import cn.ussshenzhou.t88.gui.util.ImageFit;
+import cn.ussshenzhou.t88.gui.util.Vec2i;
+import cn.ussshenzhou.t88.gui.widegt.TItem;
+import cn.ussshenzhou.villager.Villager;
+import cn.ussshenzhou.villager.input.KeyInputListener;
+import com.mojang.logging.LogUtils;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2i;
+
+/**
+ * @author USS_Shenzhou
+ */
+public class CommandScreen extends TScreen {
+    private static final int SIZE = TItem.DEFAULT_SIZE * 2;
+    private static final int GAP = 36;
+
+    private final Button gatherAround = new Button(Component.empty(),
+            button -> {
+
+                CommandScreen.this.onClose(true);
+            },
+            new ResourceLocation(Villager.MOD_ID, "textures/gui/gather.png"),
+            new ResourceLocation(Villager.MOD_ID, "textures/gui/gather_hover.png")
+    );
+
+    private final Button move = new Button(Component.empty(),
+            button -> {
+
+                CommandScreen.this.onClose(true);
+            },
+            new ResourceLocation(Villager.MOD_ID, "textures/gui/move.png"),
+            new ResourceLocation(Villager.MOD_ID, "textures/gui/move_hover.png")
+    );
+
+    private final Button dig = new Button(Component.empty(),
+            button -> {
+
+                CommandScreen.this.onClose(true);
+            },
+            new ResourceLocation(Villager.MOD_ID, "textures/gui/dig.png"),
+            new ResourceLocation(Villager.MOD_ID, "textures/gui/dig_hover.png")
+    );
+
+    public CommandScreen() {
+        super(Component.empty());
+        initButton(gatherAround);
+        initButton(move);
+        initButton(dig);
+        gatherAround.setTooltip(Tooltip.create(Component.literal("召回")));
+        move.setTooltip(Tooltip.create(Component.literal("移动")));
+        dig.setTooltip(Tooltip.create(Component.literal("挖掘")));
+    }
+
+    public void initButton(THoverSensitiveImageButton button) {
+        button.setPadding(4);
+        this.add(button);
+        button.getBackgroundImage().setImageFit(ImageFit.STRETCH);
+        button.getBackgroundImageHovered().setImageFit(ImageFit.STRETCH);
+    }
+
+    @Override
+    protected void renderBackGround(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
+    }
+
+    @Override
+    public void layout() {
+        Vector2i center = new Vector2i(width / 2, height / 2);
+        move.setBounds(center.x - SIZE / 2 - GAP, center.y - SIZE / 2, SIZE, SIZE);
+        gatherAround.setBounds(center.x - SIZE / 2, center.y - SIZE / 2 - GAP, SIZE, SIZE);
+        dig.setBounds(center.x - SIZE / 2 + GAP, center.y - SIZE / 2, SIZE, SIZE);
+        super.layout();
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
+
+    private static class Button extends THoverSensitiveImageButton {
+
+        public Button(Component text1, net.minecraft.client.gui.components.Button.OnPress onPress, @Nullable ResourceLocation backgroundImageLocation, @Nullable ResourceLocation backgroundImageLocationHovered) {
+            super(text1, onPress, backgroundImageLocation, backgroundImageLocationHovered);
+        }
+
+        @Override
+        public void layout() {
+            super.layout();
+            button.setBounds(0, 0, this.width, this.height);
+        }
+    }
+}
