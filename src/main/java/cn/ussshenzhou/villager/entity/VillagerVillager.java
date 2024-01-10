@@ -1,9 +1,7 @@
 package cn.ussshenzhou.villager.entity;
 
 import cn.ussshenzhou.villager.VillagerManager;
-import cn.ussshenzhou.villager.entity.ai.FollowMasterGoal;
-import cn.ussshenzhou.villager.entity.ai.MasterTargetedByTargetGoal;
-import cn.ussshenzhou.villager.entity.ai.MasterHurtTargetGoal;
+import cn.ussshenzhou.villager.entity.ai.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -26,6 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.Tags;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.Set;
@@ -38,6 +37,8 @@ public class VillagerVillager extends Villager {
     @Nullable
     private UUID masterUUID = null;
     private Command command = null;
+    @Nullable
+    private Vector3f digDirection = null;
 
     private int delayAttack = 0;
     private final FollowMasterGoal cancelCombatAndFollowGoal = new FollowMasterGoal(this, 0.75f, 48, 96, false);
@@ -45,6 +46,8 @@ public class VillagerVillager extends Villager {
     private final FollowMasterGoal followMasterGoal = new FollowMasterGoal(this, 0.75f, 5, 128, false);
     private final MasterTargetedByTargetGoal masterTargetedByTargetGoal = new MasterTargetedByTargetGoal(this);
     private final MasterHurtTargetGoal masterHurtTargetGoal = new MasterHurtTargetGoal(this);
+
+    //private final DigGoalDisabled2 digGoal = new DigGoalDisabled2(this);
 
     public VillagerVillager(EntityType<? extends Villager> pEntityType, Level pLevel) {
         this(pEntityType, pLevel, VillagerType.PLAINS);
@@ -102,6 +105,7 @@ public class VillagerVillager extends Villager {
         this.goalSelector.removeAllGoals(goal -> true);
         this.targetSelector.removeAllGoals(goal -> true);
         this.setTarget(null);
+        this.digDirection = null;
         switch (command) {
             case FOLLOW -> {
                 delayAttack = 5 * 20;
@@ -115,7 +119,11 @@ public class VillagerVillager extends Villager {
 
             }*/
             case DIG -> {
-
+                /*//goalSelector.addGoal(0, digGoal);
+                var player = this.getMaster();
+                //this.digDirection = player.getLookAngle().toVector3f();
+                var target = this.position().toVector3f().add(player.getLookAngle().toVector3f().normalize().mul(64));
+                this.getNavigation().moveTo(target.x, target.y, target.z, getSpeed() * 0.75f);*/
             }
         }
     }
@@ -138,6 +146,11 @@ public class VillagerVillager extends Villager {
 
     public Command getCommand() {
         return command;
+    }
+
+    @Nullable
+    public Vector3f getDigDirection() {
+        return digDirection;
     }
 
     @Override
@@ -188,6 +201,17 @@ public class VillagerVillager extends Villager {
     @Override
     public void releasePoi(MemoryModuleType<GlobalPos> pModuleType) {
         //super.releasePoi(pModuleType);
+    }
+
+    @Override
+    public void restoreFrom(Entity pEntity) {
+        super.restoreFrom(pEntity);
+        if (pEntity instanceof VillagerVillager villager) {
+            this.command = villager.command;
+            this.masterUUID = villager.masterUUID;
+            masterTargetedByTargetGoal.init();
+            this.setTarget(null);
+        }
     }
 
     public enum Command {

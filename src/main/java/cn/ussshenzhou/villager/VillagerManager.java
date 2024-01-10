@@ -1,10 +1,13 @@
 package cn.ussshenzhou.villager;
 
 import cn.ussshenzhou.villager.entity.VillagerVillager;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.LogicalSide;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.util.LogicalSidedProvider;
 import net.neoforged.neoforge.event.TickEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
@@ -12,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author USS_Shenzhou
@@ -42,7 +46,14 @@ public class VillagerManager {
         if (player.level().isClientSide) {
             return;
         }
-        PLAYER_AND_VILLAGERS.get(player.getUUID()).forEach(villager -> villager.teleportTo((ServerLevel) player.level(), player.getX(), player.getY(), player.getZ(), Set.of(), villager.getYRot(), villager.getXRot()));
+        MinecraftServer minecraftServer = (MinecraftServer) LogicalSidedProvider.WORKQUEUE.get(LogicalSide.SERVER);
+        CompletableFuture.runAsync(() -> {
+            try {
+                Thread.sleep(15 * 1000);
+                minecraftServer.execute(() -> PLAYER_AND_VILLAGERS.get(player.getUUID()).forEach(villager -> villager.teleportTo((ServerLevel) player.level(), player.getX(), player.getY(), player.getZ(), Set.of(), villager.getYRot(), villager.getXRot())));
+            } catch (InterruptedException ignored) {
+            }
+        });
     }
 
 }

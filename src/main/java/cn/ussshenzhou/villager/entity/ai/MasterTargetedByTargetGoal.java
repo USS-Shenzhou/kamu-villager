@@ -31,13 +31,13 @@ public class MasterTargetedByTargetGoal extends TargetGoal {
 
     protected void onMasterTargetedBy(LivingChangeTargetEvent event) {
         var entity = event.getEntity();
-        if (event.getOriginalTarget() == villager.getMasterUUID()) {
+        if (event.getOriginalTarget() == villager.getMaster()) {
             targets.removeIf(livingEntityWeakReference -> livingEntityWeakReference.get() == entity);
         }
         if (entity instanceof Piglin) {
             return;
         }
-        if (event.getNewTarget() == villager.getMasterUUID()) {
+        if (event.getNewTarget() == villager.getMaster()) {
             targets.add(new WeakReference<>(entity));
         }
     }
@@ -54,7 +54,7 @@ public class MasterTargetedByTargetGoal extends TargetGoal {
         if (villager.getRandom().nextFloat() > 0.1f) {
             return false;
         }
-        LivingEntity livingentity = this.villager.getMasterUUID();
+        LivingEntity livingentity = this.villager.getMaster();
         if (livingentity == null) {
             return false;
         } else {
@@ -80,7 +80,7 @@ public class MasterTargetedByTargetGoal extends TargetGoal {
     @Override
     public void start() {
         this.mob.setTarget(this.ownerLastTargetedBy);
-        LivingEntity livingentity = this.villager.getMasterUUID();
+        LivingEntity livingentity = this.villager.getMaster();
         if (livingentity != null) {
             this.timestamp = livingentity.getLastHurtByMobTimestamp();
         }
