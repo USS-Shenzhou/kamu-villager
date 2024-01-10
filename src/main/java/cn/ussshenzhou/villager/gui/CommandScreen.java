@@ -5,8 +5,11 @@ import cn.ussshenzhou.t88.gui.screen.TScreen;
 import cn.ussshenzhou.t88.gui.util.ImageFit;
 import cn.ussshenzhou.t88.gui.util.Vec2i;
 import cn.ussshenzhou.t88.gui.widegt.TItem;
+import cn.ussshenzhou.t88.network.NetworkHelper;
 import cn.ussshenzhou.villager.Villager;
+import cn.ussshenzhou.villager.entity.VillagerVillager;
 import cn.ussshenzhou.villager.input.KeyInputListener;
+import cn.ussshenzhou.villager.network.CommandVillagerPacket;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -26,25 +29,25 @@ public class CommandScreen extends TScreen {
 
     private final Button gatherAround = new Button(Component.empty(),
             button -> {
-
+                NetworkHelper.sendToServer(new CommandVillagerPacket(VillagerVillager.Command.FOLLOW));
                 CommandScreen.this.onClose(true);
             },
             new ResourceLocation(Villager.MOD_ID, "textures/gui/gather.png"),
             new ResourceLocation(Villager.MOD_ID, "textures/gui/gather_hover.png")
     );
 
-    private final Button move = new Button(Component.empty(),
+    /*private final Button move = new Button(Component.empty(),
             button -> {
 
                 CommandScreen.this.onClose(true);
             },
             new ResourceLocation(Villager.MOD_ID, "textures/gui/move.png"),
             new ResourceLocation(Villager.MOD_ID, "textures/gui/move_hover.png")
-    );
+    );*/
 
     private final Button dig = new Button(Component.empty(),
             button -> {
-
+                NetworkHelper.sendToServer(new CommandVillagerPacket(VillagerVillager.Command.DIG));
                 CommandScreen.this.onClose(true);
             },
             new ResourceLocation(Villager.MOD_ID, "textures/gui/dig.png"),
@@ -54,10 +57,10 @@ public class CommandScreen extends TScreen {
     public CommandScreen() {
         super(Component.empty());
         initButton(gatherAround);
-        initButton(move);
+        //initButton(move);
         initButton(dig);
         gatherAround.setTooltip(Tooltip.create(Component.literal("召回")));
-        move.setTooltip(Tooltip.create(Component.literal("移动")));
+        //move.setTooltip(Tooltip.create(Component.literal("移动")));
         dig.setTooltip(Tooltip.create(Component.literal("挖掘")));
     }
 
@@ -75,8 +78,8 @@ public class CommandScreen extends TScreen {
     @Override
     public void layout() {
         Vector2i center = new Vector2i(width / 2, height / 2);
-        move.setBounds(center.x - SIZE / 2 - GAP, center.y - SIZE / 2, SIZE, SIZE);
-        gatherAround.setBounds(center.x - SIZE / 2, center.y - SIZE / 2 - GAP, SIZE, SIZE);
+        gatherAround.setBounds(center.x - SIZE / 2 - GAP, center.y - SIZE / 2, SIZE, SIZE);
+        //move.setBounds(center.x - SIZE / 2, center.y - SIZE / 2 - GAP, SIZE, SIZE);
         dig.setBounds(center.x - SIZE / 2 + GAP, center.y - SIZE / 2, SIZE, SIZE);
         super.layout();
     }

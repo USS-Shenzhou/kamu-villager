@@ -90,6 +90,7 @@ dependencies {
     }
     jarJar(group: 'cn.ussshenzhou', name: 't88', version: '[0.7,0.8)') {
         jarJar.pin(it, '0.7.0-pre.0')
+        exclude group: "net.neoforged", module: "neoforge"
     }
     // Example mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime

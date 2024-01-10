@@ -28,4 +28,8 @@ public class VillagerManager {
         PLAYER_AND_VILLAGERS.computeIfAbsent(master, player -> new LinkedList<>()).add(villager);
     }
 
+    public static void command(Player master, VillagerVillager.Command command) {
+
+    }
+
 }
