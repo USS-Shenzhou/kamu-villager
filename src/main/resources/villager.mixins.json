@@ -8,7 +8,8 @@
     "BedBlockMixin",
     "BowItemMixin",
     "InventoryMixin",
-    "ServerPlayerMixin"
+    "ServerPlayerMixin",
+    "VillagerRendererMixin"
   ],
   "client": [
   ],

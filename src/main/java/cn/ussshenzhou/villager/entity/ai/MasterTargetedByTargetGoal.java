@@ -10,9 +10,7 @@ import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
 
 import java.lang.ref.WeakReference;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 
 /**
  * @author USS_Shenzhou
@@ -33,13 +31,13 @@ public class MasterTargetedByTargetGoal extends TargetGoal {
 
     protected void onMasterTargetedBy(LivingChangeTargetEvent event) {
         var entity = event.getEntity();
-        if (event.getOriginalTarget() == villager.getMaster()) {
+        if (event.getOriginalTarget() == villager.getMasterUUID()) {
             targets.removeIf(livingEntityWeakReference -> livingEntityWeakReference.get() == entity);
         }
         if (entity instanceof Piglin) {
             return;
         }
-        if (event.getNewTarget() == villager.getMaster()) {
+        if (event.getNewTarget() == villager.getMasterUUID()) {
             targets.add(new WeakReference<>(entity));
         }
     }
@@ -56,7 +54,7 @@ public class MasterTargetedByTargetGoal extends TargetGoal {
         if (villager.getRandom().nextFloat() > 0.1f) {
             return false;
         }
-        LivingEntity livingentity = this.villager.getMaster();
+        LivingEntity livingentity = this.villager.getMasterUUID();
         if (livingentity == null) {
             return false;
         } else {
@@ -82,7 +80,7 @@ public class MasterTargetedByTargetGoal extends TargetGoal {
     @Override
     public void start() {
         this.mob.setTarget(this.ownerLastTargetedBy);
-        LivingEntity livingentity = this.villager.getMaster();
+        LivingEntity livingentity = this.villager.getMasterUUID();
         if (livingentity != null) {
             this.timestamp = livingentity.getLastHurtByMobTimestamp();
         }

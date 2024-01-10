@@ -8,6 +8,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.network.chat.Component;
@@ -44,6 +45,18 @@ public class SelfTradeScreen extends TScreen {
             int j = this.topPos;
             p_281500_.blit(INVENTORY_LOCATION, i, j, 0, 0, this.imageWidth, this.imageHeight);
             SelfTradeScreen.renderEntityInInventoryFollowsMouse(p_281500_, i + 26, j + 8, i + 75, j + 78, 30, 0.0625F, p_283481_, p_281831_, this.minecraft.player);
+        }
+
+        @Override
+        public void containerTick() {
+            if (this.minecraft.gameMode.hasInfiniteItems()) {
+                this.minecraft
+                        .setScreen(
+                                new CreativeModeInventoryScreen(
+                                        this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), this.minecraft.options.operatorItemsTab().get()
+                                )
+                        );
+            }
         }
     };
     private final SelfTradePanel tradePanel = new SelfTradePanel();

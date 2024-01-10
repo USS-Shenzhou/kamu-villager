@@ -9,14 +9,15 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.joml.Quaternionf;
 
 /**
  * @author USS_Shenzhou
  */
-public class VillagerArmorModel extends EntityModel<Player> {
-    private final ModelPart head, chestplate, leggings, boots;
+public class VillagerArmorModel<T extends LivingEntity> extends EntityModel<T> {
+    public final ModelPart head, chestplate, leggings, boots;
 
     public VillagerArmorModel(ModelPart root) {
         this.head = root.getChild("head");
@@ -36,7 +37,7 @@ public class VillagerArmorModel extends EntityModel<Player> {
     }
 
     @Override
-    public void setupAnim(Player entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+    public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
     }
 
     @Deprecated
@@ -44,14 +45,14 @@ public class VillagerArmorModel extends EntityModel<Player> {
     public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
     }
 
-    public void render(float partialTick, Player player, EquipmentSlot slot, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+    public void render(float partialTick, T player, EquipmentSlot slot, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
         if (slot == EquipmentSlot.OFFHAND || slot == EquipmentSlot.MAINHAND) {
             return;
         }
         poseStack.pushPose();
         if (slot == EquipmentSlot.HEAD) {
             this.head.xRot = (float) (player.getViewXRot(partialTick) / 180 * Math.PI);
-            this.head.yRot=(float) (Mth.lerp(partialTick, player.yHeadRotO - player.yBodyRotO, player.yHeadRot - player.yBodyRot) / 180 * Math.PI);
+            this.head.yRot = (float) (Mth.lerp(partialTick, player.yHeadRotO - player.yBodyRotO, player.yHeadRot - player.yBodyRot) / 180 * Math.PI);
         }
         var toRender = switch (slot) {
             case CHEST -> chestplate;
