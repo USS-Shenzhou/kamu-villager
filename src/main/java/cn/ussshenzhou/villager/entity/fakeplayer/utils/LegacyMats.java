@@ -351,13 +351,14 @@ public class LegacyMats {
                     && !state.getValue(WATERLOGGED)) {
                 return false;
             }
-            if (state.getBlock() == Blocks.LIGHTNING_ROD && !state.getValue(WATERLOGGED)
-                    && state.getValue(FACING) == Direction.UP || state.getValue(FACING) == Direction.DOWN) {
+            if (state.getBlock() == Blocks.LIGHTNING_ROD
+                    && (!state.getValue(WATERLOGGED) && state.getValue(FACING) == Direction.UP || state.getValue(FACING) == Direction.DOWN)
+            ) {
                 return false;
             }
-            if (state.getBlock().getClass() == TrapDoorBlock.class && state.getValue(HALF) == Half.TOP
-                    || state.getValue(HALF) == Half.BOTTOM && state.getValue(OPEN)
-                    && !state.getValue(WATERLOGGED)) {
+            if (state.getBlock().getClass() == TrapDoorBlock.class
+                    && (state.getValue(HALF) == Half.TOP || state.getValue(HALF) == Half.BOTTOM && state.getValue(OPEN) && !state.getValue(WATERLOGGED))
+            ) {
                 return false;
             }
             return true;

@@ -2,6 +2,7 @@ package cn.ussshenzhou.villager;
 
 import cn.ussshenzhou.t88.network.NetworkHelper;
 import cn.ussshenzhou.t88.util.InventoryHelper;
+import cn.ussshenzhou.villager.entity.fakeplayer.FalsePlayer;
 import cn.ussshenzhou.villager.item.ModItems;
 import cn.ussshenzhou.villager.network.ChooseProfessionPacket;
 import net.minecraft.nbt.CompoundTag;
@@ -23,6 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
@@ -96,6 +98,16 @@ public class GeneralForgeBusListener {
     @SubscribeEvent
     public static void sleepAnyTime(SleepingTimeCheckEvent event) {
         event.setResult(Event.Result.ALLOW);
+    }
+
+    @SubscribeEvent
+    public static void sendFalsePlayer(PlayerEvent.PlayerLoggedInEvent event) {
+        var player = event.getEntity();
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.level().getEntitiesOfClass(FalsePlayer.class, new AABB(-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE)).forEach(
+                    falsePlayer -> falsePlayer.renderBot(serverPlayer.connection, true)
+            );
+        }
     }
 
     //-----Eastern Eggs-----

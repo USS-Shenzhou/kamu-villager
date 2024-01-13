@@ -1,7 +1,9 @@
 package cn.ussshenzhou.villager.entity;
 
 import cn.ussshenzhou.villager.Villager;
+import cn.ussshenzhou.villager.entity.fakeplayer.FalsePlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
@@ -22,5 +24,11 @@ public class ModEntityTypes {
                     .sized(0.6f, 1.95f)
                     .clientTrackingRange(10)
                     .build("villager_villager")
+    );
+    public static final Supplier<EntityType<FalsePlayer>> FALSE_PLAYER = ENTITY_TYPE.register("false_player",
+            () -> EntityType.Builder.of((EntityType<FalsePlayer> type, Level level) -> FalsePlayer.create((ServerLevel) level), MobCategory.MONSTER)
+                    .sized(0.6f, 1.8f)
+                    .clientTrackingRange(10)
+                    .build("false_player")
     );
 }
