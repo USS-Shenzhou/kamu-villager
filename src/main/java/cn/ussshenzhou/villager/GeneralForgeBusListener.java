@@ -1,21 +1,37 @@
 package cn.ussshenzhou.villager;
 
 import cn.ussshenzhou.t88.network.NetworkHelper;
+import cn.ussshenzhou.t88.task.Task;
+import cn.ussshenzhou.t88.task.TaskHelper;
 import cn.ussshenzhou.t88.util.InventoryHelper;
+import cn.ussshenzhou.villager.entity.FalseFalsePlayer;
+import cn.ussshenzhou.villager.entity.ModEntityTypes;
+import cn.ussshenzhou.villager.entity.VillagerVillager;
 import cn.ussshenzhou.villager.entity.fakeplayer.FalsePlayer;
+import cn.ussshenzhou.villager.entity.fakeplayer.events.BotFallDamageEvent;
+import cn.ussshenzhou.villager.entity.fakeplayer.utils.BlockFace;
+import cn.ussshenzhou.villager.entity.fakeplayer.utils.LegacyMats;
 import cn.ussshenzhou.villager.item.ModItems;
 import cn.ussshenzhou.villager.network.ChooseProfessionPacket;
+import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -24,12 +40,17 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
+import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerSleepInBedEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
@@ -62,6 +83,7 @@ public class GeneralForgeBusListener {
 
     private static final MobSpawnSettings.SpawnerData PILLAGER = new MobSpawnSettings.SpawnerData(EntityType.PILLAGER, 40, 1, 3);
     private static final MobSpawnSettings.SpawnerData VINDICATOR = new MobSpawnSettings.SpawnerData(EntityType.VINDICATOR, 70, 1, 3);
+    private static MobSpawnSettings.SpawnerData FALSE_FALSE_PLAYER = null;
 
     @SubscribeEvent
     public static void addSpawnEntity(LevelEvent.PotentialSpawns event) {
@@ -70,6 +92,25 @@ public class GeneralForgeBusListener {
         }
         event.addSpawnerData(PILLAGER);
         event.addSpawnerData(VINDICATOR);
+        if (FALSE_FALSE_PLAYER == null) {
+            FALSE_FALSE_PLAYER = new MobSpawnSettings.SpawnerData(ModEntityTypes.FALSE_FALSE_PLAYER.get(), 20, 1, 1);
+        }
+        event.addSpawnerData(FALSE_FALSE_PLAYER);
+    }
+
+    @SubscribeEvent
+    public static void replaceSpawn(MobSpawnEvent.FinalizeSpawn event) {
+        if (event.getEntity() instanceof FalseFalsePlayer proxy) {
+            event.setSpawnCancelled(true);
+            var real = FalsePlayer.create((ServerLevel) proxy.level());
+            real.setPos(event.getX(), event.getY(), event.getZ());
+            event.getLevel().addFreshEntity(real);
+        } else if (event.getEntity() instanceof Villager villager) {
+            event.setSpawnCancelled(true);
+            var villagerVillager = new VillagerVillager(ModEntityTypes.VILLAGER_VILLAGER.get(), event.getLevel().getLevel(), villager.getVillagerData().getType());
+            villagerVillager.setPos(event.getX(), event.getY(), event.getZ());
+            event.getLevel().addFreshEntity(villagerVillager);
+        }
     }
 
     @SubscribeEvent
@@ -107,6 +148,92 @@ public class GeneralForgeBusListener {
             serverPlayer.level().getEntitiesOfClass(FalsePlayer.class, new AABB(-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE)).forEach(
                     falsePlayer -> falsePlayer.renderBot(serverPlayer.connection, true)
             );
+        }
+    }
+
+    @SubscribeEvent
+    public static void onFallDamage(BotFallDamageEvent event) {
+        FalsePlayer bot = event.getFalsePlayer();
+        Level level = bot.level();
+
+        bot.look(BlockFace.DOWN);
+
+        Item itemType;
+        Block placeType;
+        SoundEvent sound;
+        BlockPos groundLoc = null;
+        BlockState ground = null;
+        boolean nether = level.dimension() == Level.NETHER;
+        double yPos = bot.position().y;
+
+        if (nether) {
+            itemType = Items.TWISTING_VINES;
+            sound = SoundEvents.WEEPING_VINES_PLACE;
+            placeType = Blocks.TWISTING_VINES;
+
+            for (BlockPos pos : event.getStandingOn()) {
+                if (LegacyMats.canPlaceTwistingVines(level.getBlockState(pos))) {
+                    groundLoc = pos;
+                    ground = level.getBlockState(pos);
+                    break;
+                }
+            }
+        } else {
+            itemType = Items.WATER_BUCKET;
+            sound = SoundEvents.BUCKET_EMPTY;
+            placeType = Blocks.WATER;
+
+            for (BlockPos pos : event.getStandingOn()) {
+                if (LegacyMats.canPlaceWater(pos, level.getBlockState(pos), Optional.of(yPos))) {
+                    groundLoc = pos;
+                    ground = level.getBlockState(pos);
+                    break;
+                }
+            }
+        }
+
+        if (groundLoc == null) {
+            return;
+        }
+
+        var loc = !LegacyMats.shouldReplace(groundLoc, ground, yPos, nether) ? groundLoc.offset(0, 1, 0) : groundLoc;
+        var locState = level.getBlockState(loc);
+        boolean waterloggable = !nether && locState.hasProperty(BlockStateProperties.WATERLOGGED);
+        boolean waterlogged = waterloggable && locState.getValue(BlockStateProperties.WATERLOGGED);
+
+        event.setCanceled(true);
+
+        if (locState.getBlock() != placeType && !waterlogged) {
+            bot.punch();
+            if (waterloggable) {
+                locState.setValue(BlockStateProperties.WATERLOGGED, true);
+                level.setBlocksDirty(loc, locState, locState);
+            } else {
+                level.setBlock(loc, placeType.defaultBlockState(), 1);
+            }
+            level.playSound(null, loc, sound, SoundSource.PLAYERS, 1, 1);
+
+            if (itemType == Items.WATER_BUCKET) {
+                bot.setItem(new ItemStack(Items.BUCKET));
+
+                TaskHelper.addServerTask(() -> {
+                    BlockState blockState = level.getBlockState(loc);
+
+                    boolean waterloggedNow = !nether && blockState.hasProperty(BlockStateProperties.WATERLOGGED)
+                            && blockState.getValue(BlockStateProperties.WATERLOGGED);
+                    if (blockState.getBlock() == Blocks.WATER || waterloggedNow) {
+                        bot.look(BlockFace.DOWN);
+                        bot.setItem(new ItemStack(Items.WATER_BUCKET));
+                        level.playSound(null, loc, SoundEvents.BUCKET_FILL, SoundSource.PLAYERS, 1, 1);
+                        if (waterloggedNow) {
+                            locState.setValue(BlockStateProperties.WATERLOGGED, false);
+                            level.setBlocksDirty(loc, locState, locState);
+                        } else {
+                            level.setBlock(loc, Blocks.AIR.defaultBlockState(), 1);
+                        }
+                    }
+                }, 5);
+            }
         }
     }
 

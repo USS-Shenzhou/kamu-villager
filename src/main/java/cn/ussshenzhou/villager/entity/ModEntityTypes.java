@@ -31,4 +31,12 @@ public class ModEntityTypes {
                     .clientTrackingRange(10)
                     .build("false_player")
     );
+
+    public static final Supplier<EntityType<FalseFalsePlayer>> FALSE_FALSE_PLAYER = ENTITY_TYPE.register("false_false_player",
+            () -> EntityType.Builder.of(FalseFalsePlayer::new, MobCategory.MONSTER)
+                    .sized(0.6f, 1.8f)
+                    .clientTrackingRange(10)
+                    .canSpawnFarFromPlayer()
+                    .build("false_false_player")
+    );
 }

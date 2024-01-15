@@ -86,7 +86,7 @@ public class SelfTradeScreen extends TScreen {
 
     @Override
     public boolean mouseDragged(double pMouseX, double pMouseY, int pButton, double pDragX, double pDragY) {
-        return super.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY) || inventory.mouseDragged(pMouseX - INVENTORY_OFFSET, pMouseY, pButton, pDragX //needtest
+        return super.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY) || inventory.mouseDragged(pMouseX - INVENTORY_OFFSET, pMouseY, pButton, pDragX
                 , pDragY);
     }
 

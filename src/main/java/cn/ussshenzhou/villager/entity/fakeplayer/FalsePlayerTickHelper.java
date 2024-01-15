@@ -16,6 +16,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.Item;
@@ -50,17 +51,20 @@ public class FalsePlayerTickHelper {
     private static final Map<LivingEntity, Task> MINING_ANIM = new HashMap<>();
     private static final Set<FalsePlayer> BOAT_COOLDOWN = new HashSet<>();
     private static final Set<Boat> BOATS = new HashSet<>();
-    public static boolean offsets = true;
+    public static boolean offsets = false;
     private static final Map<LivingEntity, Vec3> TOWER_LIST = new HashMap<>();
     private static final Map<BlockPos, Short> CRACK_LIST = new HashMap<>();
     private static final Map<RepeatTask, Byte> MINING = new HashMap<>();
     protected static final Set<Task> TASK_LIST = new HashSet<>();
     private static final Set<FalsePlayer> FALL_DAMAGE_COOLDOWN = new HashSet<>();
 
+    private static final double ATTACK_MOVE_SPEED = 0.5;
+    private static final int ATTACK_SPEED = 5;
+
     public static void remove(FalsePlayer falsePlayer) {
-        try{
+        try {
             MINING_ANIM.get(falsePlayer).cancel();
-        } catch (NullPointerException ignored){
+        } catch (NullPointerException ignored) {
         }
         List.of(BT_LIST, BT_CHECK, NO_FACE, NO_JUMP, SLOW, MINING_ANIM, BOAT_COOLDOWN, TOWER_LIST, CRACK_LIST, FALL_DAMAGE_COOLDOWN).forEach(
                 o -> {
@@ -82,7 +86,7 @@ public class FalsePlayerTickHelper {
             center(falsePlayer);
         }
         var level = falsePlayer.level();
-        Vec3 loc = new Vec3(falsePlayer.position().x, falsePlayer.position().y, falsePlayer.position().z);
+        Vec3 loc = Vec3Helper.clone(falsePlayer.position());
         LivingEntity livingTarget = locateTarget(falsePlayer, loc);
 
         LegacyBlockCheck.tryPreMLG(falsePlayer, loc);
@@ -99,9 +103,7 @@ public class FalsePlayerTickHelper {
 
         BlockPos target = offsets ? livingTarget.getOnPos().offset(falsePlayer.getOnPos()) : livingTarget.getOnPos();
 
-        boolean ai = false;
-
-        if (falsePlayer.tickDelay(3) && !MINING_ANIM.containsKey(falsePlayer)) {
+        if (falsePlayer.tickDelay(ATTACK_SPEED) && !MINING_ANIM.containsKey(falsePlayer)) {
             BlockPos botEyeLoc = Vec3Helper.blockPos(falsePlayer.getEyePosition());
             BlockPos playerEyeLoc = Vec3Helper.blockPos(livingTarget.getEyePosition());
             BlockPos playerLoc = Vec3Helper.blockPos(livingTarget.position());
@@ -169,13 +171,13 @@ public class FalsePlayerTickHelper {
                 case 1:
                     resetHand(falsePlayer, livingTarget, falsePlayer);
                     if (!NO_JUMP.contains(falsePlayer) && !waterGround) {
-                        move(falsePlayer, livingTarget, loc, target, ai);
+                        move(falsePlayer, livingTarget, loc, target);
                     }
                     return;
 
                 case 2:
                     if (!waterGround) {
-                        move(falsePlayer, livingTarget, loc, target, ai);
+                        move(falsePlayer, livingTarget, loc, target);
                     }
             }
         } else if (LegacyMats.WATER.contains(level.getBlockState(Vec3Helper.blockPos(loc)).getBlock())) {
@@ -217,8 +219,8 @@ public class FalsePlayerTickHelper {
         falsePlayer.addVelocity(vector);
     }
 
-    private static void move(FalsePlayer falsePlayer, LivingEntity livingTarget, Vec3 position, BlockPos target, boolean ai) {
-        Vec3 vel = target.getCenter().subtract(position).normalize();
+    private static void move(FalsePlayer falsePlayer, LivingEntity livingTarget, Vec3 position, BlockPos target) {
+        Vec3 vel = target.getCenter().subtract(position).normalize().multiply(ATTACK_MOVE_SPEED, ATTACK_MOVE_SPEED, ATTACK_MOVE_SPEED);
 
         if (falsePlayer.tickDelay(5)) {
             falsePlayer.face(livingTarget.position());
@@ -254,7 +256,9 @@ public class FalsePlayerTickHelper {
             vel.y = (0);
             vel.multiply(0.5, 0.5, 0.5);
         } else {
-            vel.y = (0.4);
+            if (falsePlayer.getRandom().nextFloat() < 0.2) {
+                vel.y = (0.4);
+            }
         }
 
         vel.y = (vel.y - Math.random() * 0.05);
@@ -584,8 +588,8 @@ public class FalsePlayerTickHelper {
     }
 
     private static boolean checkUp(FalsePlayer falsePlayer, LivingEntity target, LivingEntity playerNPC, BlockPos loc, boolean c, boolean sameXZ) {
-        var a = playerNPC.position();
-        var b = target.position();
+        var a = Vec3Helper.clone(playerNPC.position());
+        var b = Vec3Helper.clone(target.position());
 
         a.y = 0;
         b.y = 0;
@@ -676,7 +680,7 @@ public class FalsePlayerTickHelper {
                         }
                     } else {
                         if (falsePlayer.isBotOnGround()) {
-                            Vec3 locBlock = playerNPC.position();
+                            Vec3 locBlock = Vec3Helper.clone(playerNPC.position());
                             locBlock.x = locBlock.x + 0.5;
                             locBlock.z = locBlock.z + 0.5;
 
@@ -755,7 +759,7 @@ public class FalsePlayerTickHelper {
             return true;
         } else {
             Vec3 a = loc.getCenter();
-            Vec3 b = player.position();
+            Vec3 b = Vec3Helper.clone(player.position());
 
             a.y = 0;
             b.y = 0;
@@ -780,7 +784,7 @@ public class FalsePlayerTickHelper {
 
     private static void downMine(FalsePlayer npc, LivingEntity player, Block block) {
         if (!LegacyMats.NO_CRACK.contains(block)) {
-            var locBlock = player.position();
+            var locBlock = Vec3Helper.clone(player.position());
             locBlock.x = locBlock.x() + 0.5;
             locBlock.z = locBlock.z() + 0.5;
 
@@ -794,7 +798,7 @@ public class FalsePlayerTickHelper {
         }
 
         if (npc.isBotInWater()) {
-            var locBlock = player.position();
+            var locBlock = Vec3Helper.clone(player.position());
             locBlock.x = locBlock.x() + 0.5;
             locBlock.z = locBlock.z() + 0.5;
 
@@ -1039,113 +1043,118 @@ public class FalsePlayerTickHelper {
         if (targetGoal.length > 0) {
             g = targetGoal[0];
         }
-        switch (g) {
-            default:
-                return null;
+        var last = falsePlayer.getLastHurtByMob();
+        if (last != null && last.isAlive() && last.level() == falsePlayer.level() && last.position().distanceToSqr(falsePlayer.position()) <= 48 * 48) {
+            result = last;
+        }else {
+            switch (g) {
+                default:
+                    return null;
 
-            /*case NEAREST_PLAYER: {
-                for (Player player : falsePlayer.level().players()) {
-                    if (validateCloserEntity(falsePlayer, player, loc, result)) {
-                        result = player;
-                    }
-                }
-
-                break;
-            }*/
-
-            case NEAREST_VULNERABLE_PLAYER: {
-                for (Player truePlayer : falsePlayer.level().players()) {
-                    if (!(truePlayer instanceof FalsePlayer)) {
-                        if (!truePlayer.isCreative() && validateCloserEntity(falsePlayer, truePlayer, loc, result)) {
-                            result = truePlayer;
-                        }
-                    }
-                }
-                break;
-            }
-
-            /*case NEAREST_HOSTILE: {
-                for (LivingEntity entity : falsePlayer.level().getNearbyEntities(Monster.class, TargetingConditions.forCombat(), falsePlayer, falsePlayer.getBoundingBox().inflate(64))) {
-                    if (entity instanceof Monster && validateCloserEntity(falsePlayer, entity, loc, result)) {
-                        result = entity;
-                    }
-                }
-
-                break;
-            }
-
-            case NEAREST_RAIDER: {
-                for (LivingEntity entity : falsePlayer.level().getNearbyEntities(Raider.class, TargetingConditions.forCombat(), falsePlayer, falsePlayer.getBoundingBox().inflate(64))) {
-                    if ((entity instanceof Raider || (entity instanceof Vex vex && vex.getOwner() instanceof Raider)) && validateCloserEntity(falsePlayer, entity, loc, result)) {
-                        result = entity;
-                    }
-                }
-
-                break;
-            }
-
-            case NEAREST_MOB: {
-                for (LivingEntity entity : falsePlayer.level().getNearbyEntities(Mob.class, TargetingConditions.forCombat(), falsePlayer, falsePlayer.getBoundingBox().inflate(64))) {
-                    if (entity instanceof Mob && validateCloserEntity(falsePlayer, entity, loc, result)) {
-                        result = entity;
-                    }
-                }
-
-                break;
-            }
-
-            case NEAREST_BOT: {
-                for (FalsePlayer otherBot : manager.fetch()) {
-                    if (falsePlayer != otherBot) {
-                        LivingEntity player = otherBot.getBukkitEntity();
-
-                        if (validateCloserEntity(player, loc, result)) {
+                /*case NEAREST_PLAYER: {
+                    for (Player player : falsePlayer.level().players()) {
+                        if (validateCloserEntity(falsePlayer, player, loc, result)) {
                             result = player;
                         }
                     }
-                }
 
-                break;
-            }
+                    break;
+                }*/
 
-            case NEAREST_BOT_DIFFER: {
-                String name = falsePlayer.getBotName();
-
-                for (FalsePlayer otherBot : manager.fetch()) {
-                    if (falsePlayer != otherBot) {
-                        LivingEntity player = otherBot.getBukkitEntity();
-
-                        if (!name.equals(otherBot.getBotName()) && validateCloserEntity(player, loc, result)) {
-                            result = player;
+                case NEAREST_VULNERABLE_PLAYER: {
+                    for (Player truePlayer : falsePlayer.level().players()) {
+                        if (!(truePlayer instanceof FalsePlayer)) {
+                            if (!truePlayer.isCreative() && truePlayer.distanceToSqr(falsePlayer) <= 64 * 64 && validateCloserEntity(falsePlayer, truePlayer, loc, result)) {
+                                result = truePlayer;
+                            }
                         }
                     }
+                    break;
                 }
 
-                break;
-            }
-
-            case NEAREST_BOT_DIFFER_ALPHA: {
-                String name = NAME_PATTERN.matcher(falsePlayer.getBotName()).replaceAll("");
-
-                for (FalsePlayer otherBot : manager.fetch()) {
-                    if (falsePlayer != otherBot) {
-                        LivingEntity player = otherBot.getBukkitEntity();
-
-                        if (!name.equals(NAME_PATTERN.matcher(otherBot.getBotName()).replaceAll("")) && validateCloserEntity(player, loc, result)) {
-                            result = player;
+                /*case NEAREST_HOSTILE: {
+                    for (LivingEntity entity : falsePlayer.level().getNearbyEntities(Monster.class, TargetingConditions.forCombat(), falsePlayer, falsePlayer.getBoundingBox().inflate(64))) {
+                        if (entity instanceof Monster && validateCloserEntity(falsePlayer, entity, loc, result)) {
+                            result = entity;
                         }
                     }
+
+                    break;
                 }
-            }*/
-            case PLAYER: {
-                //Target a single player. Defaults to NEAREST_VULNERABLE_PLAYER if no player found.
-                if (falsePlayer.getTargetPlayer() != null) {
-                    Player player = falsePlayer.level().getPlayerByUUID(falsePlayer.getTargetPlayer());
-                    if (player != null && validateCloserEntity(falsePlayer, player, loc, null)) {
-                        return player;
+
+                case NEAREST_RAIDER: {
+                    for (LivingEntity entity : falsePlayer.level().getNearbyEntities(Raider.class, TargetingConditions.forCombat(), falsePlayer, falsePlayer.getBoundingBox().inflate(64))) {
+                        if ((entity instanceof Raider || (entity instanceof Vex vex && vex.getOwner() instanceof Raider)) && validateCloserEntity(falsePlayer, entity, loc, result)) {
+                            result = entity;
+                        }
                     }
+
+                    break;
                 }
-                return locateTarget(falsePlayer, loc, EnumTargetGoal.NEAREST_VULNERABLE_PLAYER);
+
+                case NEAREST_MOB: {
+                    for (LivingEntity entity : falsePlayer.level().getNearbyEntities(Mob.class, TargetingConditions.forCombat(), falsePlayer, falsePlayer.getBoundingBox().inflate(64))) {
+                        if (entity instanceof Mob && validateCloserEntity(falsePlayer, entity, loc, result)) {
+                            result = entity;
+                        }
+                    }
+
+                    break;
+                }
+
+                case NEAREST_BOT: {
+                    for (FalsePlayer otherBot : manager.fetch()) {
+                        if (falsePlayer != otherBot) {
+                            LivingEntity player = otherBot.getBukkitEntity();
+
+                            if (validateCloserEntity(player, loc, result)) {
+                                result = player;
+                            }
+                        }
+                    }
+
+                    break;
+                }
+
+                case NEAREST_BOT_DIFFER: {
+                    String name = falsePlayer.getBotName();
+
+                    for (FalsePlayer otherBot : manager.fetch()) {
+                        if (falsePlayer != otherBot) {
+                            LivingEntity player = otherBot.getBukkitEntity();
+
+                            if (!name.equals(otherBot.getBotName()) && validateCloserEntity(player, loc, result)) {
+                                result = player;
+                            }
+                        }
+                    }
+
+                    break;
+                }
+
+                case NEAREST_BOT_DIFFER_ALPHA: {
+                    String name = NAME_PATTERN.matcher(falsePlayer.getBotName()).replaceAll("");
+
+                    for (FalsePlayer otherBot : manager.fetch()) {
+                        if (falsePlayer != otherBot) {
+                            LivingEntity player = otherBot.getBukkitEntity();
+
+                            if (!name.equals(NAME_PATTERN.matcher(otherBot.getBotName()).replaceAll("")) && validateCloserEntity(player, loc, result)) {
+                                result = player;
+                            }
+                        }
+                    }
+                }*/
+                case PLAYER: {
+                    //Target a single player. Defaults to NEAREST_VULNERABLE_PLAYER if no player found.
+                    if (falsePlayer.getTargetPlayer() != null) {
+                        Player player = falsePlayer.level().getPlayerByUUID(falsePlayer.getTargetPlayer());
+                        if (player != null && validateCloserEntity(falsePlayer, player, loc, null)) {
+                            return player;
+                        }
+                    }
+                    return locateTarget(falsePlayer, loc, EnumTargetGoal.NEAREST_VULNERABLE_PLAYER);
+                }
             }
         }
         FalsePlayerLocateTargetEvent event = new FalsePlayerLocateTargetEvent(falsePlayer, result);
@@ -1210,7 +1219,7 @@ public class FalsePlayerTickHelper {
 
     private static void miscellaneousChecks(FalsePlayer falsePlayer, LivingEntity target) {
         Level level = falsePlayer.level();
-        Vec3 vec3 = falsePlayer.position();
+        Vec3 vec3 = Vec3Helper.clone(falsePlayer.position());
         var pos = Vec3Helper.blockPos(vec3);
         if (falsePlayer.isOnFire()) {
             if (falsePlayer.level().dimension() != Level.NETHER) {
@@ -1380,10 +1389,9 @@ public class FalsePlayerTickHelper {
     }
 
     private static void attack(FalsePlayer bot, LivingEntity target, Vec3 loc) {
-        if (target instanceof Player && ((Player) target).isCreative() || loc.distanceToSqr(target.position()) >= 4 * 4) {
+        if (target instanceof Player && ((Player) target).isCreative() || loc.distanceToSqr(target.position()) >= 3.75 * 3.75) {
             return;
         }
-
         bot.attack(target);
     }
 
@@ -1435,7 +1443,7 @@ public class FalsePlayerTickHelper {
 
     public static void onPlayerDamage(BotDamageByPlayerEvent event) {
         FalsePlayer bot = event.getBot();
-        var loc = bot.position();
+        var loc = Vec3Helper.clone(bot.position());
         Player player = event.getPlayer();
 
         double dot = loc.subtract(player.position()).normalize().dot(getDirection(bot.getXRot(), bot.getYRot()));

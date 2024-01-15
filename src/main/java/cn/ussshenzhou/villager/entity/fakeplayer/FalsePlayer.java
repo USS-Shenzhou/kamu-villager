@@ -1,5 +1,6 @@
 package cn.ussshenzhou.villager.entity.fakeplayer;
 
+import cn.ussshenzhou.t88.analyzer.back.T88AnalyzerClient;
 import cn.ussshenzhou.t88.network.NetworkHelper;
 import cn.ussshenzhou.t88.task.TaskHelper;
 import cn.ussshenzhou.villager.entity.fakeplayer.events.BotDamageByPlayerEvent;
@@ -8,10 +9,15 @@ import cn.ussshenzhou.villager.entity.fakeplayer.events.BotKilledByPlayerEvent;
 import cn.ussshenzhou.villager.entity.fakeplayer.utils.*;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.PacketSendListener;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.*;
@@ -23,24 +29,33 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.ScoreAccess;
+import net.minecraft.world.scores.Team;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
@@ -64,7 +79,7 @@ public class FalsePlayer extends ServerPlayer {
     private UUID targetPlayer = null;
     private boolean blocking;
 
-    public static final String NAME = "false_player";
+    public static final String NAME = "Steve";
 
     public FalsePlayer(MinecraftServer pServer, ServerLevel pLevel, GameProfile pGameProfile) {
         super(pServer, pLevel, pGameProfile, ClientInformation.createDefault());
@@ -75,7 +90,8 @@ public class FalsePlayer extends ServerPlayer {
         UUID uuid = BotUtils.randomSteveUUID();
         var profile = new CustomGameProfile(uuid, NAME);
         FalsePlayer falsePlayer = new FalsePlayer(server, level, profile);
-
+        falsePlayer.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(2);
+        falsePlayer.populateDefaultEquipmentSlots(level.random);
 
         falsePlayer.connection = new ServerGamePacketListenerImpl(server, new FakeConnection(), falsePlayer, CommonListenerCookie.createInitial(profile));
         level.players().forEach(player -> player.connection.send(
@@ -84,6 +100,102 @@ public class FalsePlayer extends ServerPlayer {
         falsePlayer.renderAll();
         //TerminatorPlus.getInstance().getManager().add(falsePlayer);
         return falsePlayer;
+    }
+
+
+    protected void populateDefaultEquipmentSlots(RandomSource r) {
+        for (EquipmentSlot equipmentslot : EquipmentSlot.values()) {
+            if (r.nextFloat() < 0.6f) {
+                continue;
+            }
+            if (equipmentslot.getType() == EquipmentSlot.Type.ARMOR) {
+                ItemStack itemstack = this.getItemBySlot(equipmentslot);
+                if (itemstack.isEmpty()) {
+                    Item item = getRandomArmor(r, equipmentslot);
+                    if (item != null) {
+                        this.setItemSlot(equipmentslot, new ItemStack(item));
+                    }
+                }
+            } else if (equipmentslot.getType() == EquipmentSlot.Type.HAND) {
+                ItemStack itemstack = this.getItemBySlot(EquipmentSlot.MAINHAND);
+                if (itemstack.isEmpty()) {
+                    Item item = getRandomWeapon(r);
+                    if (item != null) {
+                        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(item));
+                    }
+                }
+            }
+        }
+    }
+
+    private Item getRandomArmor(RandomSource r, EquipmentSlot slot) {
+        float f = r.nextFloat();
+        float netherite = 0.05f;
+        float diamond = 0.15f;
+        float iron = 0.5f;
+        switch (slot) {
+            case HEAD:
+                if (f < netherite) {
+                    return Items.NETHERITE_HELMET;
+                } else if (f < diamond) {
+                    return Items.DIAMOND_HELMET;
+                } else if (f < iron) {
+                    return Items.IRON_HELMET;
+                } else {
+                    return null;
+                }
+            case CHEST:
+                if (f < netherite) {
+                    return Items.NETHERITE_CHESTPLATE;
+                } else if (f < diamond) {
+                    return Items.DIAMOND_CHESTPLATE;
+                } else if (f < iron) {
+                    return Items.IRON_CHESTPLATE;
+                } else {
+                    return null;
+                }
+            case LEGS:
+                if (f < netherite) {
+                    return Items.NETHERITE_LEGGINGS;
+                } else if (f < diamond) {
+                    return Items.DIAMOND_LEGGINGS;
+                } else if (f < iron) {
+                    return Items.IRON_LEGGINGS;
+                } else {
+                    return null;
+                }
+            case FEET:
+                if (f < netherite) {
+                    return Items.NETHERITE_BOOTS;
+                } else if (f < diamond) {
+                    return Items.DIAMOND_BOOTS;
+                } else if (f < iron) {
+                    return Items.IRON_BOOTS;
+                } else {
+                    return null;
+                }
+            default:
+                return null;
+        }
+    }
+
+    private Item getRandomWeapon(RandomSource r) {
+        float f = r.nextFloat();
+        float netherite = 0.05f;
+        float diamond = 0.15f;
+        float iron = 0.5f;
+        float stone = 0.7f;
+        if (f < netherite) {
+            return r.nextBoolean() ? Items.NETHERITE_SWORD : Items.NETHERITE_AXE;
+        } else if (f < diamond) {
+            return r.nextBoolean() ? Items.DIAMOND_SWORD : Items.DIAMOND_AXE;
+        } else if (f < iron) {
+            return r.nextBoolean() ? Items.IRON_SWORD : Items.IRON_AXE;
+        } else if (f < stone) {
+            return Items.STONE_AXE;
+        } else {
+            return null;
+        }
     }
 
     private static class FakeConnection extends Connection {
@@ -156,7 +268,8 @@ public class FalsePlayer extends ServerPlayer {
 
     @Override
     public void tick() {
-        FalsePlayerTickHelper.tick(this);
+        T88AnalyzerClient.record("vy", velocity.y);
+        T88AnalyzerClient.record("y", position().y);
         super.tick();
         if (!isAlive()) {
             return;
@@ -192,6 +305,7 @@ public class FalsePlayer extends ServerPlayer {
         fallDamageCheck();
         oldVelocity = Vec3Helper.clone(velocity);
         doTick();
+        FalsePlayerTickHelper.tick(this);
     }
 
     public boolean checkGround() {
@@ -222,12 +336,11 @@ public class FalsePlayer extends ServerPlayer {
 
         for (double x : xVals) {
             for (double z : zVals) {
-                BlockPos pos = new BlockPos((int) x, (int) (position().y - 0.01), (int) z);
+                BlockPos pos = new BlockPos(Mth.floor(x), Mth.floor(position().y - 0.01), Mth.floor(z));
                 BlockState state = level().getBlockState(pos);
 
-                if ((state.isSolid() || LegacyMats.canStandOn(state.getBlock()) && BotUtils.overlaps(playerBox,
-                        //needtest May need add pos?
-                        state.getCollisionShape(level(), pos).bounds()))) {
+                if ((state.isSolid() || LegacyMats.canStandOn(state.getBlock())
+                        && BotUtils.overlaps(playerBox, state.getCollisionShape(level(), pos).bounds().move(pos)))) {
                     if (!blockPosList.contains(pos)) {
                         standingOn.add(pos);
                         blockPosList.add(pos);
@@ -239,16 +352,16 @@ public class FalsePlayer extends ServerPlayer {
         //Fence/wall check
         for (double x : xVals) {
             for (double z : zVals) {
-                BlockPos pos = new BlockPos((int) x, (int) (position().y - 0.01), (int) z);
+                BlockPos pos = new BlockPos(Mth.floor(x), Mth.floor(position().y - 0.01), Mth.floor(z));
                 BlockState state = level().getBlockState(pos);
                 var shape = state.getCollisionShape(level(), pos);
                 AABB blockBox;
                 if (shape.isEmpty()) {
-                    //needtest
                     blockBox = new AABB(0, 0, 0, 0, 0, 0);
                 } else {
                     blockBox = shape.bounds();
                 }
+                blockBox = blockBox.move(pos);
                 /*AABB modifiedBox = new AABB(blockBox.getMinX(), blockBox.getMinY(), blockBox.getMinZ(), blockBox.getMaxX(),
                         blockBox.getMinY() + 1.5, blockBox.getMaxZ());*/
                 var modifiedBox = blockBox.setMaxY(blockBox.minY + 1.5);
@@ -297,7 +410,7 @@ public class FalsePlayer extends ServerPlayer {
         var pos = position();
 
         for (int i = 0; i <= 2; i++) {
-            Block block = level().getBlockState(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z)).getBlock();
+            Block block = level().getBlockState(Vec3Helper.blockPos(pos)).getBlock();
 
             if (block == Blocks.WATER || block == Blocks.LAVA) {
                 return true;
@@ -556,8 +669,44 @@ public class FalsePlayer extends ServerPlayer {
 
     @Override
     public void die(DamageSource pCause) {
-        super.die(pCause);
+        this.gameEvent(GameEvent.ENTITY_DIE);
+        if (net.neoforged.neoforge.common.CommonHooks.onLivingDeath(this, pCause)) {
+            return;
+        }
+        this.connection.send(new ClientboundPlayerCombatKillPacket(this.getId(), CommonComponents.EMPTY));
+        this.removeEntitiesOnShoulder();
+        if (this.level().getGameRules().getBoolean(GameRules.RULE_FORGIVE_DEAD_PLAYERS)) {
+            this.tellNeutralMobsThatIDied();
+        }
+        if (!this.isSpectator()) {
+            this.dropAllDeathLoot(pCause);
+        }
+        this.getScoreboard().forAllObjectives(ObjectiveCriteria.DEATH_COUNT, this, ScoreAccess::increment);
+        LivingEntity livingentity = this.getKillCredit();
+        if (livingentity != null) {
+            this.awardStat(Stats.ENTITY_KILLED_BY.get(livingentity.getType()));
+            livingentity.awardKillScore(this, this.deathScore, pCause);
+            this.createWitherRose(livingentity);
+        }
+        this.level().broadcastEntityEvent(this, (byte)3);
+        this.awardStat(Stats.DEATHS);
+        this.resetStat(Stats.CUSTOM.get(Stats.TIME_SINCE_DEATH));
+        this.resetStat(Stats.CUSTOM.get(Stats.TIME_SINCE_REST));
+        this.clearFire();
+        this.setTicksFrozen(0);
+        this.setSharedFlagOnFire(false);
+        this.getCombatTracker().recheckStatus();
+        this.setLastDeathLocation(Optional.of(GlobalPos.of(this.level().dimension(), this.blockPosition())));
         this.dieCheck();
+    }
+
+    protected void tellNeutralMobsThatIDied() {
+        AABB aabb = new AABB(this.blockPosition()).inflate(32.0, 10.0, 32.0);
+        this.level()
+                .getEntitiesOfClass(Mob.class, aabb, EntitySelector.NO_SPECTATORS)
+                .stream()
+                .filter(p_9188_ -> p_9188_ instanceof NeutralMob)
+                .forEach(p_9057_ -> ((NeutralMob)p_9057_).playerDied(this));
     }
 
     @Override
@@ -660,5 +809,10 @@ public class FalsePlayer extends ServerPlayer {
             sum.normalize().multiply(max, max, max);
         }
         velocity = sum;
+    }
+
+    @Override
+    protected void dropEquipment() {
+        //super.dropEquipment();
     }
 }
