@@ -68,6 +68,9 @@ public class ProfessionHud extends TPanel {
     @Override
     public void tickT() {
         super.tickT();
+        if (Minecraft.getInstance().player == null) {
+            return;
+        }
         var p = Minecraft.getInstance().player.getData(ModDataAttachments.PROFESSION).get();
         if (profession != p) {
             icon.setItem(new ItemStack(p.icon));

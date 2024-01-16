@@ -25,11 +25,11 @@ public class LegacyBlockCheck {
         if (bot.level().getBlockState(loc).getBlock() != Blocks.COBBLESTONE) {
             bot.level().playSound(null, loc, SoundEvents.STONE_PLACE, SoundSource.BLOCKS, 1, 1);
             bot.setItem(new ItemStack(Blocks.COBBLESTONE));
-            bot.level().setBlock(loc, Blocks.COBBLESTONE.defaultBlockState(), 1);
+            bot.level().setBlock(loc, Blocks.COBBLESTONE.defaultBlockState(), 2);
 
             Block under = bot.level().getBlockState(loc.offset(0, -1, 0)).getBlock();
             if (under == Blocks.LAVA) {
-                bot.level().setBlock(loc.offset(0, -1, 0), Blocks.COBBLESTONE.defaultBlockState(), 1);
+                bot.level().setBlock(loc.offset(0, -1, 0), Blocks.COBBLESTONE.defaultBlockState(), 2);
             }
         }
     }
@@ -218,7 +218,7 @@ public class LegacyBlockCheck {
             falsePlayer.punch();
             falsePlayer.level().playSound(null, falsePlayer.getOnPos(), SoundEvents.STONE_PLACE, SoundSource.BLOCKS, 1, 1);
             falsePlayer.setItem(new ItemStack(Blocks.COBBLESTONE));
-            falsePlayer.level().setBlock(Vec3Helper.blockPos(loc), Blocks.COBBLESTONE.defaultBlockState(), 1);
+            falsePlayer.level().setBlock(Vec3Helper.blockPos(loc), Blocks.COBBLESTONE.defaultBlockState(), 2);
         }
 
         return false;
@@ -227,8 +227,8 @@ public class LegacyBlockCheck {
     public static void clutch(FalsePlayer falsePlayer, LivingEntity target) {
         Vec3 botLoc = falsePlayer.position();
 
-        Block type = falsePlayer.level().getBlockState(falsePlayer.getOnPos().offset(0, -1, 0)).getBlock();
-        Block type2 = falsePlayer.level().getBlockState(falsePlayer.getOnPos().offset(0, -2, 0)).getBlock();
+        Block type = falsePlayer.level().getBlockState(Vec3Helper.blockPos(falsePlayer.position().add(0, -1, 0))).getBlock();
+        Block type2 = falsePlayer.level().getBlockState(Vec3Helper.blockPos(falsePlayer.position().add(0, -1, 0))).getBlock();
 
         if (!(LegacyMats.SPAWN.contains(type) && LegacyMats.SPAWN.contains(type2))) {
             return;
@@ -276,7 +276,7 @@ public class LegacyBlockCheck {
                 falsePlayer.sneak();
                 falsePlayer.level().playSound(null, pos, SoundEvents.STONE_PLACE, SoundSource.BLOCKS, 1, 1);
                 falsePlayer.setItem(new ItemStack(Blocks.COBBLESTONE));
-                falsePlayer.level().setBlock(pos, Blocks.COBBLESTONE.defaultBlockState(), 1);
+                falsePlayer.level().setBlock(pos, Blocks.COBBLESTONE.defaultBlockState(), 2);
             }
         }
     }

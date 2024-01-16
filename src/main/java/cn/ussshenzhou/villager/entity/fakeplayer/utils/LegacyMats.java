@@ -26,7 +26,7 @@ public class LegacyMats {
             Blocks.VINE,
             Blocks.FERN,
             Blocks.LARGE_FERN,
-            Blocks.GRASS_BLOCK,
+            Blocks.SHORT_GRASS,
             Blocks.TALL_GRASS,
             Blocks.SEAGRASS,
             Blocks.TALL_SEAGRASS,

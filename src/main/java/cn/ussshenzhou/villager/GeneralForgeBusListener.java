@@ -93,7 +93,7 @@ public class GeneralForgeBusListener {
         event.addSpawnerData(PILLAGER);
         event.addSpawnerData(VINDICATOR);
         if (FALSE_FALSE_PLAYER == null) {
-            FALSE_FALSE_PLAYER = new MobSpawnSettings.SpawnerData(ModEntityTypes.FALSE_FALSE_PLAYER.get(), 20, 1, 1);
+            FALSE_FALSE_PLAYER = new MobSpawnSettings.SpawnerData(ModEntityTypes.FALSE_FALSE_PLAYER.get(), 60, 1, 1);
         }
         event.addSpawnerData(FALSE_FALSE_PLAYER);
     }
@@ -102,8 +102,7 @@ public class GeneralForgeBusListener {
     public static void replaceSpawn(MobSpawnEvent.FinalizeSpawn event) {
         if (event.getEntity() instanceof FalseFalsePlayer proxy) {
             event.setSpawnCancelled(true);
-            var real = FalsePlayer.create((ServerLevel) proxy.level());
-            real.setPos(event.getX(), event.getY(), event.getZ());
+            var real = FalsePlayer.create((ServerLevel) proxy.level(),event.getX(), event.getY(), event.getZ());
             event.getLevel().addFreshEntity(real);
         } else if (event.getEntity() instanceof Villager villager) {
             event.setSpawnCancelled(true);
@@ -209,7 +208,7 @@ public class GeneralForgeBusListener {
                 locState.setValue(BlockStateProperties.WATERLOGGED, true);
                 level.setBlocksDirty(loc, locState, locState);
             } else {
-                level.setBlock(loc, placeType.defaultBlockState(), 1);
+                level.setBlock(loc, placeType.defaultBlockState(), 2);
             }
             level.playSound(null, loc, sound, SoundSource.PLAYERS, 1, 1);
 
@@ -229,7 +228,7 @@ public class GeneralForgeBusListener {
                             locState.setValue(BlockStateProperties.WATERLOGGED, false);
                             level.setBlocksDirty(loc, locState, locState);
                         } else {
-                            level.setBlock(loc, Blocks.AIR.defaultBlockState(), 1);
+                            level.setBlock(loc, Blocks.AIR.defaultBlockState(), 2);
                         }
                     }
                 }, 5);

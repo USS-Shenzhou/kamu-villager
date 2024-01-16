@@ -22,6 +22,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -39,15 +40,15 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.block.TallGrassBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -58,6 +59,7 @@ import net.minecraft.world.scores.Team;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.LogicalSidedProvider;
 import org.jetbrains.annotations.Nullable;
@@ -78,6 +80,7 @@ public class FalsePlayer extends ServerPlayer {
     private List<BlockPos> standingOn = new ArrayList<>();
     private UUID targetPlayer = null;
     private boolean blocking;
+    public ItemStack defaultWeapon;
 
     public static final String NAME = "Steve";
 
@@ -86,12 +89,17 @@ public class FalsePlayer extends ServerPlayer {
     }
 
     public static FalsePlayer create(ServerLevel level) {
+        return create(level, 0, 0, 0);
+    }
+
+    public static FalsePlayer create(ServerLevel level, double x, double y, double z) {
         MinecraftServer server = (MinecraftServer) LogicalSidedProvider.WORKQUEUE.get(LogicalSide.SERVER);
         UUID uuid = BotUtils.randomSteveUUID();
         var profile = new CustomGameProfile(uuid, NAME);
         FalsePlayer falsePlayer = new FalsePlayer(server, level, profile);
-        falsePlayer.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(2);
         falsePlayer.populateDefaultEquipmentSlots(level.random);
+        falsePlayer.getAdvancements().stopListening();
+        falsePlayer.setPos(x, y, z);
 
         falsePlayer.connection = new ServerGamePacketListenerImpl(server, new FakeConnection(), falsePlayer, CommonListenerCookie.createInitial(profile));
         level.players().forEach(player -> player.connection.send(
@@ -105,7 +113,7 @@ public class FalsePlayer extends ServerPlayer {
 
     protected void populateDefaultEquipmentSlots(RandomSource r) {
         for (EquipmentSlot equipmentslot : EquipmentSlot.values()) {
-            if (r.nextFloat() < 0.6f) {
+            if (r.nextFloat() < 0.2f) {
                 continue;
             }
             if (equipmentslot.getType() == EquipmentSlot.Type.ARMOR) {
@@ -121,8 +129,18 @@ public class FalsePlayer extends ServerPlayer {
                 if (itemstack.isEmpty()) {
                     Item item = getRandomWeapon(r);
                     if (item != null) {
-                        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(item));
+                        this.defaultWeapon = new ItemStack(item);
+                    } else {
+                        this.defaultWeapon = ItemStack.EMPTY;
                     }
+                    this.setItemSlot(EquipmentSlot.MAINHAND, defaultWeapon);
+                    float d = 3;
+                    if (item instanceof SwordItem sword) {
+                        d = sword.getDamage();
+                    } else if (item instanceof AxeItem axe) {
+                        d = axe.getAttackDamage();
+                    }
+                    this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(d);
                 }
             }
         }
@@ -183,8 +201,8 @@ public class FalsePlayer extends ServerPlayer {
         float f = r.nextFloat();
         float netherite = 0.05f;
         float diamond = 0.15f;
-        float iron = 0.5f;
-        float stone = 0.7f;
+        float iron = 0.6f;
+        float stone = 0.8f;
         if (f < netherite) {
             return r.nextBoolean() ? Items.NETHERITE_SWORD : Items.NETHERITE_AXE;
         } else if (f < diamond) {
@@ -192,7 +210,7 @@ public class FalsePlayer extends ServerPlayer {
         } else if (f < iron) {
             return r.nextBoolean() ? Items.IRON_SWORD : Items.IRON_AXE;
         } else if (f < stone) {
-            return Items.STONE_AXE;
+            return r.nextBoolean() ? Items.STONE_SWORD : Items.STONE_AXE;
         } else {
             return null;
         }
@@ -268,9 +286,17 @@ public class FalsePlayer extends ServerPlayer {
 
     @Override
     public void tick() {
-        T88AnalyzerClient.record("vy", velocity.y);
-        T88AnalyzerClient.record("y", position().y);
         super.tick();
+        if (level().isClientSide) {
+            return;
+        }
+        if (level().players().stream()
+                .filter(player -> !(player instanceof FalsePlayer))
+                .filter(realPlayer -> this.distanceToSqr(realPlayer) <= 128 * 128)
+                .findAny().isEmpty()) {
+            this.removeBot();
+        }
+
         if (!isAlive()) {
             return;
         }
@@ -355,12 +381,10 @@ public class FalsePlayer extends ServerPlayer {
                 BlockPos pos = new BlockPos(Mth.floor(x), Mth.floor(position().y - 0.01), Mth.floor(z));
                 BlockState state = level().getBlockState(pos);
                 var shape = state.getCollisionShape(level(), pos);
-                AABB blockBox;
-                if (shape.isEmpty()) {
-                    blockBox = new AABB(0, 0, 0, 0, 0, 0);
-                } else {
-                    blockBox = shape.bounds();
+                if (shape.isEmpty() || state.getBlock() instanceof TallGrassBlock) {
+                    continue;
                 }
+                AABB blockBox = shape.bounds();
                 blockBox = blockBox.move(pos);
                 /*AABB modifiedBox = new AABB(blockBox.getMinX(), blockBox.getMinY(), blockBox.getMinZ(), blockBox.getMaxX(),
                         blockBox.getMinY() + 1.5, blockBox.getMaxZ());*/
@@ -465,7 +489,10 @@ public class FalsePlayer extends ServerPlayer {
                     }
                 } catch (IllegalArgumentException ignored) {
                 }
-                if (BotUtils.NO_FALL.contains(state.getBlock()) && (BotUtils.overlaps(playerBox, state.getCollisionShape(level(), pos).bounds())
+                var shape = state.getCollisionShape(level(), pos);
+                if (BotUtils.NO_FALL.contains(state.getBlock())
+                        && !shape.isEmpty()
+                        && (BotUtils.overlaps(playerBox, shape.bounds())
                         || state.getBlock() == Blocks.WATER || state.getBlock() == Blocks.LAVA)) {
                     return true;
                 }
@@ -595,7 +622,7 @@ public class FalsePlayer extends ServerPlayer {
         BlockState block = level().getBlockState(loc);
 
         if (!block.isSolid()) {
-            level().setBlock(loc, b.defaultBlockState(), 1);
+            level().setBlock(loc, b.defaultBlockState(), 2);
             level().playSound(null, loc, SoundEvents.STONE_PLACE, SoundSource.BLOCKS, 1, 1);
         }
     }
@@ -688,7 +715,7 @@ public class FalsePlayer extends ServerPlayer {
             livingentity.awardKillScore(this, this.deathScore, pCause);
             this.createWitherRose(livingentity);
         }
-        this.level().broadcastEntityEvent(this, (byte)3);
+        this.level().broadcastEntityEvent(this, (byte) 3);
         this.awardStat(Stats.DEATHS);
         this.resetStat(Stats.CUSTOM.get(Stats.TIME_SINCE_DEATH));
         this.resetStat(Stats.CUSTOM.get(Stats.TIME_SINCE_REST));
@@ -706,7 +733,7 @@ public class FalsePlayer extends ServerPlayer {
                 .getEntitiesOfClass(Mob.class, aabb, EntitySelector.NO_SPECTATORS)
                 .stream()
                 .filter(p_9188_ -> p_9188_ instanceof NeutralMob)
-                .forEach(p_9057_ -> ((NeutralMob)p_9057_).playerDied(this));
+                .forEach(p_9057_ -> ((NeutralMob) p_9057_).playerDied(this));
     }
 
     @Override
@@ -809,6 +836,11 @@ public class FalsePlayer extends ServerPlayer {
             sum.normalize().multiply(max, max, max);
         }
         velocity = sum;
+    }
+
+    @Override
+    public float getAttackStrengthScale(float pAdjustTicks) {
+        return 1;
     }
 
     @Override

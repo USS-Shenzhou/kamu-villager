@@ -115,7 +115,7 @@ public class FollowMasterGoal extends Goal {
         this.villager.getLookControl().setLookAt(this.owner, 10.0F, (float) this.villager.getMaxHeadXRot());
         if (--this.timeToRecalcPath <= 0) {
             this.timeToRecalcPath = this.adjustedTickDelay(10);
-            if (this.villager.distanceToSqr(this.owner) >= 16 * 16) {
+            if (this.villager.distanceToSqr(this.owner) >= 24 * 24) {
                 this.teleportToOwner();
             } else {
                 this.navigation.moveTo(this.owner, this.speedModifier);

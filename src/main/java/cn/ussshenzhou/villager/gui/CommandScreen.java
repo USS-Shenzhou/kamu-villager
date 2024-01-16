@@ -7,10 +7,12 @@ import cn.ussshenzhou.t88.gui.util.Vec2i;
 import cn.ussshenzhou.t88.gui.widegt.TItem;
 import cn.ussshenzhou.t88.network.NetworkHelper;
 import cn.ussshenzhou.villager.Villager;
+import cn.ussshenzhou.villager.VillagerManager;
 import cn.ussshenzhou.villager.entity.VillagerVillager;
 import cn.ussshenzhou.villager.input.KeyInputListener;
 import cn.ussshenzhou.villager.network.CommandVillagerPacket;
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
@@ -19,6 +21,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * @author USS_Shenzhou
@@ -29,6 +32,7 @@ public class CommandScreen extends TScreen {
 
     private final Button gatherAround = new Button(Component.empty(),
             button -> {
+                VillagerManager.command(Minecraft.getInstance().player, VillagerVillager.Command.FOLLOW);
                 NetworkHelper.sendToServer(new CommandVillagerPacket(VillagerVillager.Command.FOLLOW));
                 CommandScreen.this.onClose(true);
             },
@@ -47,6 +51,7 @@ public class CommandScreen extends TScreen {
 
     private final Button dig = new Button(Component.empty(),
             button -> {
+                VillagerManager.command(Minecraft.getInstance().player, VillagerVillager.Command.DIG);
                 NetworkHelper.sendToServer(new CommandVillagerPacket(VillagerVillager.Command.DIG));
                 CommandScreen.this.onClose(true);
             },
@@ -87,6 +92,15 @@ public class CommandScreen extends TScreen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    @Override
+    public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
+        if (pKeyCode == KeyInputListener.COMMAND.getKey().getValue()) {
+            this.onClose(true);
+            return true;
+        }
+        return super.keyPressed(pKeyCode, pScanCode, pModifiers);
     }
 
     private static class Button extends THoverSensitiveImageButton {

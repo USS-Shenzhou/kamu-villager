@@ -11,19 +11,19 @@ import net.neoforged.neoforge.common.util.LogicalSidedProvider;
 import net.neoforged.neoforge.event.TickEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.UUID;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * @author USS_Shenzhou
  */
+@SuppressWarnings("MapOrSetKeyShouldOverrideHashCodeEquals")
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class VillagerManager {
 
-    private static final HashMap<UUID, LinkedList<VillagerVillager>> PLAYER_AND_VILLAGERS = new HashMap<>();
+    private static final HashMap<UUID, LinkedHashSet<VillagerVillager>> PLAYER_AND_VILLAGERS = new HashMap<>();
 
     @SubscribeEvent
     public static void tick(TickEvent.ServerTickEvent event) {
@@ -32,12 +32,16 @@ public class VillagerManager {
         }
     }
 
-    public static void follow(Player master, VillagerVillager villager) {
-        PLAYER_AND_VILLAGERS.computeIfAbsent(master.getUUID(), player -> new LinkedList<>()).add(villager);
+    public static void follow(@Nonnull Player master, VillagerVillager villager) {
+        PLAYER_AND_VILLAGERS.computeIfAbsent(master.getUUID(), player -> new LinkedHashSet<>()).add(villager);
+    }
+
+    public static void follow(UUID master, VillagerVillager villager) {
+        PLAYER_AND_VILLAGERS.computeIfAbsent(master, player -> new LinkedHashSet<>()).add(villager);
     }
 
     public static void command(Player master, VillagerVillager.Command command) {
-        PLAYER_AND_VILLAGERS.get(master.getUUID()).forEach(villager -> villager.setCommand(command));
+        PLAYER_AND_VILLAGERS.computeIfAbsent(master.getUUID(), player -> new LinkedHashSet<>()).forEach(villager -> villager.setCommand(command));
     }
 
     @SubscribeEvent

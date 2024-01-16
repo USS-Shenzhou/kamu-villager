@@ -59,7 +59,7 @@ public class FalsePlayerTickHelper {
     private static final Set<FalsePlayer> FALL_DAMAGE_COOLDOWN = new HashSet<>();
 
     private static final double ATTACK_MOVE_SPEED = 0.5;
-    private static final int ATTACK_SPEED = 5;
+    private static final int ATTACK_SPEED = 7;
 
     public static void remove(FalsePlayer falsePlayer) {
         try {
@@ -230,7 +230,7 @@ public class FalsePlayerTickHelper {
         }
 
         falsePlayer.stand(); // eventually create a memory system so packets do not have to be sent every tick
-        falsePlayer.setItem(null); // method to check item in main hand, falsePlayer.getItemInHand()
+        falsePlayer.setItem(falsePlayer.defaultWeapon); // method to check item in main hand, falsePlayer.getItemInHand()
 
         try {
             vel.add(falsePlayer.getVelocity());
@@ -1046,7 +1046,7 @@ public class FalsePlayerTickHelper {
         var last = falsePlayer.getLastHurtByMob();
         if (last != null && last.isAlive() && last.level() == falsePlayer.level() && last.position().distanceToSqr(falsePlayer.position()) <= 48 * 48) {
             result = last;
-        }else {
+        } else {
             switch (g) {
                 default:
                     return null;
@@ -1064,7 +1064,7 @@ public class FalsePlayerTickHelper {
                 case NEAREST_VULNERABLE_PLAYER: {
                     for (Player truePlayer : falsePlayer.level().players()) {
                         if (!(truePlayer instanceof FalsePlayer)) {
-                            if (!truePlayer.isCreative() && truePlayer.distanceToSqr(falsePlayer) <= 64 * 64 && validateCloserEntity(falsePlayer, truePlayer, loc, result)) {
+                            if (!(truePlayer.isCreative() || truePlayer.isSpectator()) && truePlayer.distanceToSqr(falsePlayer) <= 64 * 64 && validateCloserEntity(falsePlayer, truePlayer, loc, result)) {
                                 result = truePlayer;
                             }
                         }
@@ -1237,7 +1237,7 @@ public class FalsePlayerTickHelper {
                 falsePlayer.look(BlockFace.DOWN);
                 falsePlayer.punch();
                 level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 1);
-                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 1);
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
             }
         }
 
@@ -1266,7 +1266,7 @@ public class FalsePlayerTickHelper {
                 falsePlayer.look(BlockFace.DOWN);
                 falsePlayer.punch();
                 level.playSound(null, headPos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1, 1);
-                level.setBlock(headPos, Blocks.AIR.defaultBlockState(), 1);
+                level.setBlock(headPos, Blocks.AIR.defaultBlockState(), 2);
             } else {
                 placeWaterDown(falsePlayer, level, headPos);
             }
@@ -1279,7 +1279,7 @@ public class FalsePlayerTickHelper {
         if (underType == Blocks.FIRE || underType == Blocks.SOUL_FIRE) {
             falsePlayer.look(BlockFace.DOWN);
             falsePlayer.punch();
-            level.setBlock(underPos, Blocks.AIR.defaultBlockState(), 1);
+            level.setBlock(underPos, Blocks.AIR.defaultBlockState(), 2);
         }
 
         Vec3 under2 = vec3.add(0, -2, 0);
@@ -1374,7 +1374,7 @@ public class FalsePlayerTickHelper {
 
         falsePlayer.look(BlockFace.DOWN);
         falsePlayer.punch();
-        level.setBlock(pos, Blocks.WATER.defaultBlockState(), 1);
+        level.setBlock(pos, Blocks.WATER.defaultBlockState(), 2);
         level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1, 1);
         falsePlayer.setItem(new ItemStack(Items.BUCKET));
 
@@ -1383,13 +1383,13 @@ public class FalsePlayerTickHelper {
                 falsePlayer.look(BlockFace.DOWN);
                 falsePlayer.setItem(new ItemStack(Items.WATER_BUCKET));
                 level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS, 1, 1);
-                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 1);
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
             }
         }, 5);
     }
 
     private static void attack(FalsePlayer bot, LivingEntity target, Vec3 loc) {
-        if (target instanceof Player && ((Player) target).isCreative() || loc.distanceToSqr(target.position()) >= 3.75 * 3.75) {
+        if (target instanceof Player player && (player.isCreative() || player.isSpectator()) || loc.distanceToSqr(target.position()) >= 3.75 * 3.75) {
             return;
         }
         bot.attack(target);
@@ -1421,9 +1421,9 @@ public class FalsePlayerTickHelper {
         return check;
     }
 
-    private static void resetHand(FalsePlayer npc, LivingEntity target, LivingEntity playerNPC) {
-        if (!NO_FACE.contains(npc)) { // LESSLAG if there is no if statement here
-            npc.face(target.position());
+    private static void resetHand(FalsePlayer falsePlayer, LivingEntity target, LivingEntity playerNPC) {
+        if (!NO_FACE.contains(falsePlayer)) { // LESSLAG if there is no if statement here
+            falsePlayer.face(target.position());
         }
 
         if (MINING_ANIM.containsKey(playerNPC)) {
@@ -1434,11 +1434,11 @@ public class FalsePlayerTickHelper {
             }
         }
 
-        if (BOAT_COOLDOWN.contains(npc)) {
+        if (BOAT_COOLDOWN.contains(falsePlayer)) {
             return;
         }
 
-        npc.setItem(null);
+        falsePlayer.setItem(falsePlayer.defaultWeapon);
     }
 
     public static void onPlayerDamage(BotDamageByPlayerEvent event) {
