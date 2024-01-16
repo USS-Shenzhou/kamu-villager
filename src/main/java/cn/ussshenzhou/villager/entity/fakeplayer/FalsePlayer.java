@@ -847,4 +847,9 @@ public class FalsePlayer extends ServerPlayer {
     protected void dropEquipment() {
         //super.dropEquipment();
     }
+
+    @Override
+    public int getExperienceReward() {
+        return 20;
+    }
 }

@@ -50,6 +50,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
+import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
 import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerSleepInBedEvent;
@@ -102,7 +103,7 @@ public class GeneralForgeBusListener {
     public static void replaceSpawn(MobSpawnEvent.FinalizeSpawn event) {
         if (event.getEntity() instanceof FalseFalsePlayer proxy) {
             event.setSpawnCancelled(true);
-            var real = FalsePlayer.create((ServerLevel) proxy.level(),event.getX(), event.getY(), event.getZ());
+            var real = FalsePlayer.create((ServerLevel) proxy.level(), event.getX(), event.getY(), event.getZ());
             event.getLevel().addFreshEntity(real);
         } else if (event.getEntity() instanceof Villager villager) {
             event.setSpawnCancelled(true);
@@ -233,6 +234,13 @@ public class GeneralForgeBusListener {
                     }
                 }, 5);
             }
+        }
+    }
+
+    @SubscribeEvent
+    public static void cancelXp(LivingExperienceDropEvent event) {
+        if (event.getAttackingPlayer() instanceof FalsePlayer) {
+            event.setCanceled(true);
         }
     }
 

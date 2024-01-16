@@ -126,7 +126,7 @@ public class FalsePlayerTickHelper {
             byte sideResult = 1;
 
             if (TOWER_LIST.containsKey(falsePlayer)) {
-                if (loc.y > livingTarget.getOnPos().getY()) {
+                if (loc.y > livingTarget.position().y) {
                     TOWER_LIST.remove(falsePlayer);
                     resetHand(falsePlayer, livingTarget, falsePlayer);
                 }
