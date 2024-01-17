@@ -8,10 +8,10 @@
     "BedBlockMixin",
     "BowItemMixin",
     "InventoryMixin",
-    "ServerPlayerMixin",
-    "VillagerRendererMixin"
+    "ServerPlayerMixin"
   ],
   "client": [
+    "VillagerRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

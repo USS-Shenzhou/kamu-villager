@@ -15,11 +15,16 @@ import cn.ussshenzhou.villager.item.ModItems;
 import cn.ussshenzhou.villager.network.ChooseProfessionPacket;
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
+import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
+import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.OutgoingChatMessage;
+import net.minecraft.network.chat.PlayerChatMessage;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -49,6 +54,8 @@ import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
 import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
 import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
@@ -82,8 +89,8 @@ public class GeneralForgeBusListener {
         }
     }
 
-    private static final MobSpawnSettings.SpawnerData PILLAGER = new MobSpawnSettings.SpawnerData(EntityType.PILLAGER, 40, 1, 3);
-    private static final MobSpawnSettings.SpawnerData VINDICATOR = new MobSpawnSettings.SpawnerData(EntityType.VINDICATOR, 70, 1, 3);
+    private static final MobSpawnSettings.SpawnerData PILLAGER = new MobSpawnSettings.SpawnerData(EntityType.PILLAGER, 30, 1, 3);
+    private static final MobSpawnSettings.SpawnerData VINDICATOR = new MobSpawnSettings.SpawnerData(EntityType.VINDICATOR, 60, 1, 3);
     private static MobSpawnSettings.SpawnerData FALSE_FALSE_PLAYER = null;
 
     @SubscribeEvent
@@ -91,12 +98,14 @@ public class GeneralForgeBusListener {
         if (event.getMobCategory() != MobCategory.MONSTER) {
             return;
         }
-        event.addSpawnerData(PILLAGER);
-        event.addSpawnerData(VINDICATOR);
-        if (FALSE_FALSE_PLAYER == null) {
-            FALSE_FALSE_PLAYER = new MobSpawnSettings.SpawnerData(ModEntityTypes.FALSE_FALSE_PLAYER.get(), 60, 1, 1);
+        if (((Level) event.getLevel()).dimension() == Level.OVERWORLD) {
+            event.addSpawnerData(PILLAGER);
+            event.addSpawnerData(VINDICATOR);
+            if (FALSE_FALSE_PLAYER == null) {
+                FALSE_FALSE_PLAYER = new MobSpawnSettings.SpawnerData(ModEntityTypes.FALSE_FALSE_PLAYER.get(), 80, 1, 1);
+            }
+            event.addSpawnerData(FALSE_FALSE_PLAYER);
         }
-        event.addSpawnerData(FALSE_FALSE_PLAYER);
     }
 
     @SubscribeEvent
@@ -142,12 +151,13 @@ public class GeneralForgeBusListener {
     }
 
     @SubscribeEvent
-    public static void sendFalsePlayer(PlayerEvent.PlayerLoggedInEvent event) {
+    public static void sendFalsePlayer(EntityJoinLevelEvent event) {
         var player = event.getEntity();
-        if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.level().getEntitiesOfClass(FalsePlayer.class, new AABB(-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE)).forEach(
-                    falsePlayer -> falsePlayer.renderBot(serverPlayer.connection, true)
-            );
+        if (player instanceof ServerPlayer serverPlayer && FalsePlayer.isRealPlayer(serverPlayer) && !serverPlayer.level().isClientSide) {
+            serverPlayer.level().players().stream()
+                    .filter(p -> !FalsePlayer.isRealPlayer(p))
+                    .forEach(falsePlayer -> ((FalsePlayer) falsePlayer).renderBot(serverPlayer.connection, true)
+                    );
         }
     }
 
@@ -242,6 +252,18 @@ public class GeneralForgeBusListener {
         if (event.getAttackingPlayer() instanceof FalsePlayer) {
             event.setCanceled(true);
         }
+    }
+
+    @SubscribeEvent
+    public static void regCommand(RegisterCommandsEvent event) {
+        event.getDispatcher().register(Commands.literal("清除伪人").executes(context -> {
+            var l = context.getSource().getLevel().players().stream()
+                    .filter(p -> p instanceof FalsePlayer)
+                    .toList();
+            l.forEach(p -> ((FalsePlayer) p).removeBot());
+            context.getSource().sendSuccess(() -> Component.literal(String.format("清除了 %d 个伪人", l.size())), true);
+            return 1;
+        }));
     }
 
     //-----Eastern Eggs-----

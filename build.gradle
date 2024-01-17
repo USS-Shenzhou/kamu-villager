@@ -57,6 +57,7 @@ runs {
         systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
         //programArgument '--nogui'
         jvmArgument "-XX:+AllowEnhancedClassRedefinition"
+        jvmArgument "-Xmx8G"
     }
 
     // This run config launches GameTestServer and runs all registered gametests, then exits.

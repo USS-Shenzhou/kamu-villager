@@ -94,7 +94,7 @@ public class SelfTradePanel extends TScrollContainer {
                 var b = new SelfTradeButton(new ItemStack(Items.EMERALD, 8), new ItemStack(Items.GOLDEN_CARROT, 1));
                 if (HXYAHelper.isUncle(player)) {
                     b.from.setItem(new ItemStack(Items.EMERALD, 4));
-                    b.setTooltip(Tooltip.create(Component.literal("咬不动所以大甩卖！\n§7只有你能进行此交易。")));
+                    b.setTooltip(Tooltip.create(Component.literal("咬不动，大甩卖！\n§7只有你拥有此折扣。")));
                 }
                 add(b);
                 add(new SelfTradeButton(new ItemStack(Items.EMERALD, 8), new ItemStack(Items.GOLDEN_APPLE, 1)));
@@ -102,7 +102,7 @@ public class SelfTradePanel extends TScrollContainer {
                 if (HXYAHelper.isKaMu(player)) {
                     assertVoid();
                     add(new SelfTradeButton(new ItemStack(Items.EMERALD, 6), GeneralForgeBusListener.LAVA_BOTTLE.copy())
-                            .setTooltip(Tooltip.create(Component.literal("您好，外卖！\n§7只有你能进行此交易。")))
+                            .setTooltip(Tooltip.create(Component.literal("您好，外卖！\n§7家乡特产。\n§7只有你能进行此交易。")))
                     );
                 }
             }
@@ -118,7 +118,7 @@ public class SelfTradePanel extends TScrollContainer {
                                 return;
                             }
                             Tuple<Integer, Integer> needAndValue = getNeedAndValue(food);
-                            var b = new SelfTradeButton(new ItemStack(item, needAndValue.getA()), new ItemStack(Items.EMERALD, needAndValue.getB()));
+                            var b = new SelfTradeButton(new ItemStack(item, needAndValue.getA()), new ItemStack(Items.EMERALD, item == Items.CARROT ? 1 : needAndValue.getB()));
                             add(b);
                         });
                 add(new SelfTradeButton(new ItemStack(Items.EMERALD, 1), new ItemStack(Items.WHEAT, 1)));
@@ -128,8 +128,8 @@ public class SelfTradePanel extends TScrollContainer {
                 add(new SelfTradeButton(new ItemStack(Items.EMERALD, 1), new ItemStack(Items.POTATO, 1)));
                 if (HXYAHelper.isUncle(player)) {
                     assertVoid();
-                    add(new SelfTradeButton(new ItemStack(Items.EMERALD, 1), new ItemStack(Items.CARROT, 4))
-                            .setTooltip(Tooltip.create(Component.literal("家里有很多胡萝卜很正常吧。\n§7只有你能进行此交易。")))
+                    add(new SelfTradeButton(new ItemStack(Items.EMERALD, 1), new ItemStack(Items.CARROT, 2))
+                            .setTooltip(Tooltip.create(Component.literal("兔子垄断胡萝卜很正常吧。\n§7只有你能进行此交易。")))
                     );
                 }
             }
@@ -215,7 +215,7 @@ public class SelfTradePanel extends TScrollContainer {
         }
     }
 
-    private void assertVoid(){
+    private void assertVoid() {
         for (int i = 0; i < 10; i++) {
             add(new TPanel());
         }

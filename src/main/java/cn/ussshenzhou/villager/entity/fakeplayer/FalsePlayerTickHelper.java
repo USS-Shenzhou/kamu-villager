@@ -58,7 +58,7 @@ public class FalsePlayerTickHelper {
     protected static final Set<Task> TASK_LIST = new HashSet<>();
     private static final Set<FalsePlayer> FALL_DAMAGE_COOLDOWN = new HashSet<>();
 
-    private static final double ATTACK_MOVE_SPEED = 0.5;
+    private static final double ATTACK_MOVE_SPEED = 0.25;
     private static final int ATTACK_SPEED = 7;
 
     public static void remove(FalsePlayer falsePlayer) {

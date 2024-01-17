@@ -439,11 +439,11 @@ public class LegacyMats {
                 return false;
             }
             if (state.getBlock().getClass() == PistonBaseBlock.class && state.getValue(FACING) != Direction.DOWN
-                    && state.getValue(EXTENDED)) {
+                    && (state.hasProperty(EXTENDED) && state.getValue(EXTENDED))) {
                 return false;
             }
             if (state.getBlock().getClass() == TrapDoorBlock.class && state.getValue(HALF) == Half.BOTTOM
-                    || state.getValue(OPEN)) {
+                    || (state.hasProperty(OPEN) && state.getValue(OPEN))) {
                 return false;
             }
             Block block = state.getBlock();
@@ -462,7 +462,7 @@ public class LegacyMats {
         return false;
     }
 
-    public static boolean shouldReplace(BlockPos pos,BlockState state, double entityYPos, boolean nether) {
+    public static boolean shouldReplace(BlockPos pos, BlockState state, double entityYPos, boolean nether) {
         if ((int) entityYPos != pos.getY()) {
             return false;
         }

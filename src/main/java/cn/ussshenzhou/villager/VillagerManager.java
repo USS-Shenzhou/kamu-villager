@@ -54,7 +54,12 @@ public class VillagerManager {
         CompletableFuture.runAsync(() -> {
             try {
                 Thread.sleep(15 * 1000);
-                minecraftServer.execute(() -> PLAYER_AND_VILLAGERS.get(player.getUUID()).forEach(villager -> villager.teleportTo((ServerLevel) player.level(), player.getX(), player.getY(), player.getZ(), Set.of(), villager.getYRot(), villager.getXRot())));
+                minecraftServer.execute(() -> {
+                    var set = PLAYER_AND_VILLAGERS.get(player.getUUID());
+                    if (set!=null){
+                        set.forEach(villager -> villager.teleportTo((ServerLevel) player.level(), player.getX(), player.getY(), player.getZ(), Set.of(), villager.getYRot(), villager.getXRot()));
+                    }
+                });
             } catch (InterruptedException ignored) {
             }
         });

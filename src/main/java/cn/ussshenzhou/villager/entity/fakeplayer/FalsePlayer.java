@@ -97,17 +97,18 @@ public class FalsePlayer extends ServerPlayer {
         UUID uuid = BotUtils.randomSteveUUID();
         var profile = new CustomGameProfile(uuid, NAME);
         FalsePlayer falsePlayer = new FalsePlayer(server, level, profile);
+        falsePlayer.connection = new ServerGamePacketListenerImpl(server, new FakeConnection(), falsePlayer, CommonListenerCookie.createInitial(profile));
         falsePlayer.populateDefaultEquipmentSlots(level.random);
         falsePlayer.getAdvancements().stopListening();
         falsePlayer.setPos(x, y, z);
-
-        falsePlayer.connection = new ServerGamePacketListenerImpl(server, new FakeConnection(), falsePlayer, CommonListenerCookie.createInitial(profile));
-        level.players().forEach(player -> player.connection.send(
-                new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, falsePlayer)
-        ));
+        level.players().stream().filter(FalsePlayer::isRealPlayer).forEach(p -> p.connection.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, falsePlayer)));
         falsePlayer.renderAll();
-        //TerminatorPlus.getInstance().getManager().add(falsePlayer);
+        //TaskHelper.addServerTask(() -> falsePlayer.getInventory().setChanged(), 5);
         return falsePlayer;
+    }
+
+    public static boolean isRealPlayer(Player player) {
+        return !(player instanceof FalsePlayer);
     }
 
 
@@ -227,15 +228,16 @@ public class FalsePlayer extends ServerPlayer {
     }
 
     private void renderAll() {
-        Packet<?>[] packets = getRenderPacketsNoInfo();
-        ((ServerLevel) level()).players().forEach(p -> renderNoInfo(p.connection, packets, false));
+        //Packet<?>[] packets = getRenderPacketsNoInfo();
+        ((ServerLevel) level()).players().stream().filter(FalsePlayer::isRealPlayer).forEach(p -> render(p.connection, true));
     }
 
-    private Packet<?>[] getRenderPacketsNoInfo() {
+    public Packet<?>[] getRenderPacketsNoInfo() {
+        var l = this.entityData.getNonDefaultValues();
         return new Packet[]{
                 new ClientboundAddEntityPacket(this),
                 //new ClientboundSetEntityDataPacket(this.getId(), this.entityData, true),
-                new ClientboundSetEntityDataPacket(this.getId(), this.entityData.packDirty()),
+                new ClientboundSetEntityDataPacket(this.getId(), l == null ? List.of() : l),
                 new ClientboundRotateHeadPacket(this, (byte) ((this.yHeadRot * 256f) / 360f))
         };
     }
@@ -364,9 +366,12 @@ public class FalsePlayer extends ServerPlayer {
             for (double z : zVals) {
                 BlockPos pos = new BlockPos(Mth.floor(x), Mth.floor(position().y - 0.01), Mth.floor(z));
                 BlockState state = level().getBlockState(pos);
-
+                var shape = state.getCollisionShape(level(), pos);
+                if (shape.isEmpty()) {
+                    continue;
+                }
                 if ((state.isSolid() || LegacyMats.canStandOn(state.getBlock())
-                        && BotUtils.overlaps(playerBox, state.getCollisionShape(level(), pos).bounds().move(pos)))) {
+                        && BotUtils.overlaps(playerBox, shape.bounds().move(pos)))) {
                     if (!blockPosList.contains(pos)) {
                         standingOn.add(pos);
                         blockPosList.add(pos);

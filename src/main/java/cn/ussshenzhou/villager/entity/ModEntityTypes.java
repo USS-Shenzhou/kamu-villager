@@ -29,6 +29,8 @@ public class ModEntityTypes {
             () -> EntityType.Builder.of((EntityType<FalsePlayer> type, Level level) -> FalsePlayer.create((ServerLevel) level), MobCategory.MONSTER)
                     .sized(0.6f, 1.8f)
                     .clientTrackingRange(10)
+                    .setUpdateInterval(3)
+                    .updateInterval(3)
                     .build("false_player")
     );
 
@@ -36,7 +38,8 @@ public class ModEntityTypes {
             () -> EntityType.Builder.of(FalseFalsePlayer::new, MobCategory.MONSTER)
                     .sized(0.6f, 1.8f)
                     .clientTrackingRange(10)
-                    .canSpawnFarFromPlayer()
+                    .setUpdateInterval(3)
+                    .updateInterval(3)
                     .build("false_false_player")
     );
 }
