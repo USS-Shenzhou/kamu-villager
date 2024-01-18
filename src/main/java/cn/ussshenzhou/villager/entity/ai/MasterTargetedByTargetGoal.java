@@ -1,6 +1,6 @@
 package cn.ussshenzhou.villager.entity.ai;
 
-import cn.ussshenzhou.villager.entity.VillagerVillager;
+import cn.ussshenzhou.villager.entity.VillagerFollower;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -17,13 +17,13 @@ import java.util.LinkedHashSet;
  * @see net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal
  */
 public class MasterTargetedByTargetGoal extends TargetGoal {
-    private final VillagerVillager villager;
+    private final VillagerFollower villager;
     private LivingEntity ownerLastTargetedBy;
     private int timestamp;
     private final LinkedHashSet<WeakReference<LivingEntity>> targets = new LinkedHashSet<>();
 
-    public MasterTargetedByTargetGoal(VillagerVillager villager) {
-        super(villager, false);
+    public MasterTargetedByTargetGoal(VillagerFollower villager) {
+        super(villager.getThis(), false);
         this.villager = villager;
         this.setFlags(EnumSet.of(Flag.TARGET));
         NeoForge.EVENT_BUS.addListener(this::onMasterTargetedBy);
@@ -54,7 +54,7 @@ public class MasterTargetedByTargetGoal extends TargetGoal {
      */
     @Override
     public boolean canUse() {
-        if (villager.getRandom().nextFloat() > 0.1f) {
+        if (villager.getThis().getRandom().nextFloat() > 0.1f) {
             return false;
         }
         LivingEntity livingentity = this.villager.getMaster();

@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
@@ -30,6 +31,7 @@ public class GeneralModBusListener {
         );
         event.put(ModEntityTypes.FALSE_PLAYER.get(), Player.createAttributes().build());
         event.put(ModEntityTypes.FALSE_FALSE_PLAYER.get(), Zombie.createAttributes().build());
+        //event.put(ModEntityTypes.VILLAGER_IRON_GOLEM.get(), IronGolem.createAttributes().build());
     }
 
     @SubscribeEvent

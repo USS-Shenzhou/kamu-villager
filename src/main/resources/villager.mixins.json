@@ -8,6 +8,7 @@
     "BedBlockMixin",
     "BowItemMixin",
     "InventoryMixin",
+    "IronGolemMixin",
     "ServerPlayerMixin"
   ],
   "client": [

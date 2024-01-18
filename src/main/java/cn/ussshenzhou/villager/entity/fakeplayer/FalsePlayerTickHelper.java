@@ -58,7 +58,7 @@ public class FalsePlayerTickHelper {
     protected static final Set<Task> TASK_LIST = new HashSet<>();
     private static final Set<FalsePlayer> FALL_DAMAGE_COOLDOWN = new HashSet<>();
 
-    private static final double ATTACK_MOVE_SPEED = 0.25;
+    private static final double ATTACK_MOVE_SPEED = 0.15;
     private static final int ATTACK_SPEED = 7;
 
     public static void remove(FalsePlayer falsePlayer) {
@@ -1202,7 +1202,7 @@ public class FalsePlayerTickHelper {
     }
 
     private static void fallDamageCheck(FalsePlayer falsePlayer) {
-        if (falsePlayer.isFalling()) {
+        /*if (falsePlayer.isFalling()) {
             falsePlayer.look(BlockFace.DOWN);
 
             Item itemType;
@@ -1214,7 +1214,7 @@ public class FalsePlayerTickHelper {
             }
 
             falsePlayer.setItem(new ItemStack(itemType));
-        }
+        }*/
     }
 
     private static void miscellaneousChecks(FalsePlayer falsePlayer, LivingEntity target) {
@@ -1389,7 +1389,7 @@ public class FalsePlayerTickHelper {
     }
 
     private static void attack(FalsePlayer bot, LivingEntity target, Vec3 loc) {
-        if (target instanceof Player player && (player.isCreative() || player.isSpectator()) || loc.distanceToSqr(target.position()) >= 3.75 * 3.75) {
+        if (target instanceof Player player && (player.isCreative() || player.isSpectator()) || loc.distanceToSqr(target.position()) >= 1.5f * 1.5f) {
             return;
         }
         bot.attack(target);

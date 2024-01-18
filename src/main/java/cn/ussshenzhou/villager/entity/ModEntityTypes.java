@@ -42,4 +42,11 @@ public class ModEntityTypes {
                     .updateInterval(3)
                     .build("false_false_player")
     );
+
+    /*public static final Supplier<EntityType<VillagerIronGolem>> VILLAGER_IRON_GOLEM = ENTITY_TYPE.register("villager_iron_golem",
+            () -> EntityType.Builder.of(VillagerIronGolem::new, MobCategory.MISC)
+                    .sized(1.4F, 2.7F)
+                    .clientTrackingRange(10)
+                    .build("villager_iron_golem")
+    );*/
 }

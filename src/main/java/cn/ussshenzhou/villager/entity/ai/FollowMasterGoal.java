@@ -1,5 +1,6 @@
 package cn.ussshenzhou.villager.entity.ai;
 
+import cn.ussshenzhou.villager.entity.VillagerFollower;
 import cn.ussshenzhou.villager.entity.VillagerVillager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
@@ -24,7 +25,7 @@ public class FollowMasterGoal extends Goal {
     private static final int MIN_HORIZONTAL_DISTANCE_FROM_PLAYER_WHEN_TELEPORTING = 2;
     private static final int MAX_HORIZONTAL_DISTANCE_FROM_PLAYER_WHEN_TELEPORTING = 3;
     private static final int MAX_VERTICAL_DISTANCE_FROM_PLAYER_WHEN_TELEPORTING = 1;
-    private final VillagerVillager villager;
+    private final VillagerFollower villager;
     private LivingEntity owner;
     private final LevelReader level;
     private final double speedModifier;
@@ -35,16 +36,16 @@ public class FollowMasterGoal extends Goal {
     private float oldWaterCost;
     private final boolean canFly;
 
-    public FollowMasterGoal(VillagerVillager villager, double pSpeedModifier, float pStartDistance, float pStopDistance, boolean pCanFly) {
+    public FollowMasterGoal(VillagerFollower villager, double pSpeedModifier, float pStartDistance, float pStopDistance, boolean pCanFly) {
         this.villager = villager;
-        this.level = villager.level();
+        this.level = villager.getThis().level();
         this.speedModifier = pSpeedModifier;
-        this.navigation = villager.getNavigation();
+        this.navigation = villager.getThis().getNavigation();
         this.startDistance = pStartDistance;
         this.stopDistance = pStopDistance;
         this.canFly = pCanFly;
         this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
-        if (!(villager.getNavigation() instanceof GroundPathNavigation) && !(villager.getNavigation() instanceof FlyingPathNavigation)) {
+        if (!(villager.getThis().getNavigation() instanceof GroundPathNavigation) && !(villager.getThis().getNavigation() instanceof FlyingPathNavigation)) {
             throw new IllegalArgumentException("Unsupported mob type for FollowOwnerGoal");
         }
     }
@@ -61,7 +62,7 @@ public class FollowMasterGoal extends Goal {
             return false;
         } else if (this.unableToMove()) {
             return false;
-        } else if (this.villager.distanceToSqr(livingentity) < (double) (this.startDistance * this.startDistance)) {
+        } else if (this.villager.getThis().distanceToSqr(livingentity) < (double) (this.startDistance * this.startDistance)) {
             return false;
         } else {
             this.owner = livingentity;
@@ -79,12 +80,12 @@ public class FollowMasterGoal extends Goal {
         } else if (this.unableToMove()) {
             return false;
         } else {
-            return !(this.villager.distanceToSqr(this.owner) <= (double) (this.stopDistance * this.stopDistance));
+            return !(this.villager.getThis().distanceToSqr(this.owner) <= (double) (this.stopDistance * this.stopDistance));
         }
     }
 
     private boolean unableToMove() {
-        return this.villager.isPassenger() || this.villager.isLeashed();
+        return this.villager.getThis().isPassenger() || this.villager.getThis().isLeashed();
     }
 
     /**
@@ -93,8 +94,8 @@ public class FollowMasterGoal extends Goal {
     @Override
     public void start() {
         this.timeToRecalcPath = 0;
-        this.oldWaterCost = this.villager.getPathfindingMalus(BlockPathTypes.WATER);
-        this.villager.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+        this.oldWaterCost = this.villager.getThis().getPathfindingMalus(BlockPathTypes.WATER);
+        this.villager.getThis().setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
     }
 
     /**
@@ -104,7 +105,7 @@ public class FollowMasterGoal extends Goal {
     public void stop() {
         this.owner = null;
         this.navigation.stop();
-        this.villager.setPathfindingMalus(BlockPathTypes.WATER, this.oldWaterCost);
+        this.villager.getThis().setPathfindingMalus(BlockPathTypes.WATER, this.oldWaterCost);
     }
 
     /**
@@ -112,10 +113,10 @@ public class FollowMasterGoal extends Goal {
      */
     @Override
     public void tick() {
-        this.villager.getLookControl().setLookAt(this.owner, 10.0F, (float) this.villager.getMaxHeadXRot());
+        this.villager.getThis().getLookControl().setLookAt(this.owner, 10.0F, (float) this.villager.getThis().getMaxHeadXRot());
         if (--this.timeToRecalcPath <= 0) {
             this.timeToRecalcPath = this.adjustedTickDelay(10);
-            if (this.villager.distanceToSqr(this.owner) >= 24 * 24) {
+            if (this.villager.getThis().distanceToSqr(this.owner) >= 24 * 24) {
                 this.teleportToOwner();
             } else {
                 this.navigation.moveTo(this.owner, this.speedModifier);
@@ -143,7 +144,7 @@ public class FollowMasterGoal extends Goal {
         } else if (!this.canTeleportTo(new BlockPos(pX, pY, pZ))) {
             return false;
         } else {
-            this.villager.moveTo((double) pX + 0.5, (double) pY, (double) pZ + 0.5, this.villager.getYRot(), this.villager.getXRot());
+            this.villager.getThis().moveTo((double) pX + 0.5, (double) pY, (double) pZ + 0.5, this.villager.getThis().getYRot(), this.villager.getThis().getXRot());
             this.navigation.stop();
             return true;
         }
@@ -158,13 +159,13 @@ public class FollowMasterGoal extends Goal {
             if (!this.canFly && blockstate.getBlock() instanceof LeavesBlock) {
                 return false;
             } else {
-                BlockPos blockpos = pPos.subtract(this.villager.blockPosition());
-                return this.level.noCollision(this.villager, this.villager.getBoundingBox().move(blockpos));
+                BlockPos blockpos = pPos.subtract(this.villager.getThis().blockPosition());
+                return this.level.noCollision(this.villager.getThis(), this.villager.getThis().getBoundingBox().move(blockpos));
             }
         }
     }
 
     private int randomIntInclusive(int pMin, int pMax) {
-        return this.villager.getRandom().nextInt(pMax - pMin + 1) + pMin;
+        return this.villager.getThis().getRandom().nextInt(pMax - pMin + 1) + pMin;
     }
 }

@@ -1,72 +1,47 @@
 package cn.ussshenzhou.villager;
 
 import cn.ussshenzhou.t88.network.NetworkHelper;
-import cn.ussshenzhou.t88.task.Task;
-import cn.ussshenzhou.t88.task.TaskHelper;
 import cn.ussshenzhou.t88.util.InventoryHelper;
 import cn.ussshenzhou.villager.entity.FalseFalsePlayer;
 import cn.ussshenzhou.villager.entity.ModEntityTypes;
 import cn.ussshenzhou.villager.entity.VillagerVillager;
 import cn.ussshenzhou.villager.entity.fakeplayer.FalsePlayer;
 import cn.ussshenzhou.villager.entity.fakeplayer.events.BotFallDamageEvent;
-import cn.ussshenzhou.villager.entity.fakeplayer.utils.BlockFace;
-import cn.ussshenzhou.villager.entity.fakeplayer.utils.LegacyMats;
 import cn.ussshenzhou.villager.item.ModItems;
 import cn.ussshenzhou.villager.network.ChooseProfessionPacket;
-import com.google.common.base.Optional;
-import com.google.common.base.Supplier;
 import net.minecraft.commands.Commands;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.OutgoingChatMessage;
-import net.minecraft.network.chat.PlayerChatMessage;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.npc.Villager;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.biome.MobSpawnSettings;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
 import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
 import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerSleepInBedEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
 import net.neoforged.neoforge.event.entity.player.SleepingTimeCheckEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author USS_Shenzhou
@@ -129,18 +104,18 @@ public class GeneralForgeBusListener {
         if (level.isClientSide) {
             return;
         }
-        var playerB = level.getNearbyPlayers(TargetingConditions.DEFAULT, playerA, playerA.getBoundingBox().inflate(1.9))
+        var playerB = level.getNearbyPlayers(TargetingConditions.DEFAULT, playerA, playerA.getBoundingBox().inflate(2))
                 .stream()
                 .filter(player -> player != playerA)
-                .findFirst()
+                .min((pA, pB) -> (int) ((playerA.distanceToSqr(pA) - playerA.distanceToSqr(pB)) * 100))
                 .orElse(null);
         if (playerB == null || !playerB.isSleeping()) {
             return;
         }
         playerB.stopSleeping();
-        var pos = playerB.getPosition(1);
-        var villager = new Villager(EntityType.VILLAGER, level);
-        villager.finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(playerB.blockPosition()), MobSpawnType.BREEDING, null, null);
+        var pos = playerA.position().add(playerB.position()).multiply(0.5, 0.5, 0.5);
+        var villager = new VillagerVillager(ModEntityTypes.VILLAGER_VILLAGER.get(), level);
+        //villager.finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(playerB.blockPosition()), MobSpawnType.BREEDING, null, null);
         villager.setPos(pos);
         level.addFreshEntity(villager);
     }
@@ -163,7 +138,7 @@ public class GeneralForgeBusListener {
 
     @SubscribeEvent
     public static void onFallDamage(BotFallDamageEvent event) {
-        FalsePlayer bot = event.getFalsePlayer();
+        /*FalsePlayer bot = event.getFalsePlayer();
         Level level = bot.level();
 
         bot.look(BlockFace.DOWN);
@@ -244,7 +219,7 @@ public class GeneralForgeBusListener {
                     }
                 }, 5);
             }
-        }
+        }*/
     }
 
     @SubscribeEvent

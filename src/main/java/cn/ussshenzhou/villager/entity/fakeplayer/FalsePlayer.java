@@ -149,8 +149,8 @@ public class FalsePlayer extends ServerPlayer {
 
     private Item getRandomArmor(RandomSource r, EquipmentSlot slot) {
         float f = r.nextFloat();
-        float netherite = 0.05f;
-        float diamond = 0.15f;
+        float netherite = 0.00f;
+        float diamond = 0.0f;
         float iron = 0.5f;
         switch (slot) {
             case HEAD:
@@ -200,18 +200,18 @@ public class FalsePlayer extends ServerPlayer {
 
     private Item getRandomWeapon(RandomSource r) {
         float f = r.nextFloat();
-        float netherite = 0.05f;
-        float diamond = 0.15f;
-        float iron = 0.6f;
+        float netherite = 0.00f;
+        float diamond = 0.0f;
+        float iron = 0.4f;
         float stone = 0.8f;
         if (f < netherite) {
-            return r.nextBoolean() ? Items.NETHERITE_SWORD : Items.NETHERITE_AXE;
+            return Items.NETHERITE_SWORD;
         } else if (f < diamond) {
-            return r.nextBoolean() ? Items.DIAMOND_SWORD : Items.DIAMOND_AXE;
+            return Items.DIAMOND_SWORD;
         } else if (f < iron) {
-            return r.nextBoolean() ? Items.IRON_SWORD : Items.IRON_AXE;
+            return Items.IRON_SWORD;
         } else if (f < stone) {
-            return r.nextBoolean() ? Items.STONE_SWORD : Items.STONE_AXE;
+            return Items.STONE_SWORD;
         } else {
             return null;
         }

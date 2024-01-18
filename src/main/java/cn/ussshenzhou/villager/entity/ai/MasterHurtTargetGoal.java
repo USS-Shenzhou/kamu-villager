@@ -1,6 +1,6 @@
 package cn.ussshenzhou.villager.entity.ai;
 
-import cn.ussshenzhou.villager.entity.VillagerVillager;
+import cn.ussshenzhou.villager.entity.VillagerFollower;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -12,12 +12,12 @@ import java.util.EnumSet;
  * @see net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal
  */
 public class MasterHurtTargetGoal extends TargetGoal {
-    private final VillagerVillager villager;
+    private final VillagerFollower villager;
     private LivingEntity ownerLastHurt;
     private int timestamp;
 
-    public MasterHurtTargetGoal(VillagerVillager villager) {
-        super(villager, false);
+    public MasterHurtTargetGoal(VillagerFollower villager) {
+        super(villager.getThis(), false);
         this.villager = villager;
         this.setFlags(EnumSet.of(Flag.TARGET));
     }
@@ -27,7 +27,7 @@ public class MasterHurtTargetGoal extends TargetGoal {
      */
     @Override
     public boolean canUse() {
-        if (villager.getRandom().nextFloat() > 0.1f) {
+        if (villager.getThis().getRandom().nextFloat() > 0.1f) {
             return false;
         }
         LivingEntity livingentity = this.villager.getMaster();

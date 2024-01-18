@@ -1,20 +1,16 @@
 package cn.ussshenzhou.villager.entity.ai;
 
+import cn.ussshenzhou.villager.entity.Command;
 import cn.ussshenzhou.villager.entity.VillagerVillager;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.Tags;
 import org.joml.Vector3f;
 
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.IntStream;
 
 /**
  * @author USS_Shenzhou
@@ -33,12 +29,12 @@ public class DigGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        return villager.getCommand() == VillagerVillager.Command.DIG && villager.getDigDirection() != null;
+        return villager.getCommand() == Command.DIG && villager.getDigDirection() != null;
     }
 
     @Override
     public boolean canContinueToUse() {
-        return villager.getCommand() == VillagerVillager.Command.DIG && villager.getDigDirection() != null;
+        return villager.getCommand() == Command.DIG && villager.getDigDirection() != null;
     }
 
     @Override

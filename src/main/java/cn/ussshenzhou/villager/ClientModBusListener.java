@@ -2,6 +2,7 @@ package cn.ussshenzhou.villager;
 
 import cn.ussshenzhou.villager.entity.ModEntityTypes;
 import cn.ussshenzhou.villager.render.VillagerPlayerRenderer;
+import net.minecraft.client.renderer.entity.IronGolemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.world.entity.EntityType;
 import net.neoforged.api.distmarker.Dist;

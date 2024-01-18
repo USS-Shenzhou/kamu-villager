@@ -3,25 +3,20 @@ package cn.ussshenzhou.villager.gui;
 import cn.ussshenzhou.t88.gui.advanced.THoverSensitiveImageButton;
 import cn.ussshenzhou.t88.gui.screen.TScreen;
 import cn.ussshenzhou.t88.gui.util.ImageFit;
-import cn.ussshenzhou.t88.gui.util.Vec2i;
 import cn.ussshenzhou.t88.gui.widegt.TItem;
 import cn.ussshenzhou.t88.network.NetworkHelper;
 import cn.ussshenzhou.villager.Villager;
 import cn.ussshenzhou.villager.VillagerManager;
-import cn.ussshenzhou.villager.entity.VillagerVillager;
+import cn.ussshenzhou.villager.entity.Command;
 import cn.ussshenzhou.villager.input.KeyInputListener;
 import cn.ussshenzhou.villager.network.CommandVillagerPacket;
-import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * @author USS_Shenzhou
@@ -32,8 +27,8 @@ public class CommandScreen extends TScreen {
 
     private final Button gatherAround = new Button(Component.empty(),
             button -> {
-                VillagerManager.command(Minecraft.getInstance().player, VillagerVillager.Command.FOLLOW);
-                NetworkHelper.sendToServer(new CommandVillagerPacket(VillagerVillager.Command.FOLLOW));
+                VillagerManager.command(Minecraft.getInstance().player, Command.FOLLOW);
+                NetworkHelper.sendToServer(new CommandVillagerPacket(Command.FOLLOW));
                 CommandScreen.this.onClose(true);
             },
             new ResourceLocation(Villager.MOD_ID, "textures/gui/gather.png"),
@@ -51,8 +46,8 @@ public class CommandScreen extends TScreen {
 
     private final Button dig = new Button(Component.empty(),
             button -> {
-                VillagerManager.command(Minecraft.getInstance().player, VillagerVillager.Command.DIG);
-                NetworkHelper.sendToServer(new CommandVillagerPacket(VillagerVillager.Command.DIG));
+                VillagerManager.command(Minecraft.getInstance().player, Command.DIG);
+                NetworkHelper.sendToServer(new CommandVillagerPacket(Command.DIG));
                 CommandScreen.this.onClose(true);
             },
             new ResourceLocation(Villager.MOD_ID, "textures/gui/dig.png"),

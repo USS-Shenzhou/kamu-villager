@@ -3,15 +3,11 @@ package cn.ussshenzhou.villager.entity;
 import cn.ussshenzhou.t88.task.TaskHelper;
 import cn.ussshenzhou.villager.VillagerManager;
 import cn.ussshenzhou.villager.entity.ai.*;
-import cn.ussshenzhou.villager.entity.fakeplayer.FalsePlayer;
-import cn.ussshenzhou.villager.entity.fakeplayer.FalsePlayerTickHelper;
-import cn.ussshenzhou.villager.entity.fakeplayer.utils.BlockFace;
 import cn.ussshenzhou.villager.entity.fakeplayer.utils.LegacyMats;
 import cn.ussshenzhou.villager.entity.fakeplayer.utils.Vec3Helper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -23,7 +19,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -52,7 +47,7 @@ import java.util.UUID;
 /**
  * @author USS_Shenzhou
  */
-public class VillagerVillager extends Villager {
+public class VillagerVillager extends Villager implements VillagerFollower{
     @Nullable
     private UUID masterUUID = null;
     private Command command = null;
@@ -154,6 +149,7 @@ public class VillagerVillager extends Villager {
                 });
     }
 
+    @Override
     public void setCommand(Command command) {
         this.command = command;
         this.goalSelector.removeAllGoals(goal -> true);
@@ -190,6 +186,7 @@ public class VillagerVillager extends Villager {
         }
     }
 
+    @Override
     @Nullable
     public Player getMaster() {
         if (masterUUID == null) {
@@ -305,9 +302,4 @@ public class VillagerVillager extends Villager {
         }
     }
 
-    public enum Command {
-        FOLLOW,
-        //MOVE,
-        DIG
-    }
 }
