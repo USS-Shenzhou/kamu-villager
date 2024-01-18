@@ -18,7 +18,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +25,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -66,21 +64,28 @@ public class GeneralForgeBusListener {
 
     private static final MobSpawnSettings.SpawnerData PILLAGER = new MobSpawnSettings.SpawnerData(EntityType.PILLAGER, 20, 1, 3);
     private static final MobSpawnSettings.SpawnerData VINDICATOR = new MobSpawnSettings.SpawnerData(EntityType.VINDICATOR, 40, 1, 3);
-    private static MobSpawnSettings.SpawnerData FALSE_FALSE_PLAYER = null;
+    private static MobSpawnSettings.SpawnerData FALSE_FALSE_PLAYER_NORMAL = null;
+    private static MobSpawnSettings.SpawnerData FALSE_FALSE_PLAYER_END = null;
 
     @SubscribeEvent
     public static void addSpawnEntity(LevelEvent.PotentialSpawns event) {
         if (event.getMobCategory() != MobCategory.MONSTER) {
             return;
         }
-        if (((Level) event.getLevel()).dimension() == Level.OVERWORLD) {
+        if (((Level) event.getLevel()).dimension() != Level.END) {
             event.addSpawnerData(PILLAGER);
             event.addSpawnerData(VINDICATOR);
-            if (FALSE_FALSE_PLAYER == null) {
-                FALSE_FALSE_PLAYER = new MobSpawnSettings.SpawnerData(ModEntityTypes.FALSE_FALSE_PLAYER.get(), 70, 1, 1);
+            if (FALSE_FALSE_PLAYER_NORMAL == null) {
+                FALSE_FALSE_PLAYER_NORMAL = new MobSpawnSettings.SpawnerData(ModEntityTypes.FALSE_FALSE_PLAYER.get(), 70, 1, 1);
             }
-            event.addSpawnerData(FALSE_FALSE_PLAYER);
+            event.addSpawnerData(FALSE_FALSE_PLAYER_NORMAL);
+        } else {
+            if (FALSE_FALSE_PLAYER_END == null) {
+                FALSE_FALSE_PLAYER_END = new MobSpawnSettings.SpawnerData(ModEntityTypes.FALSE_FALSE_PLAYER.get(), 50, 1, 1);
+            }
+            event.addSpawnerData(FALSE_FALSE_PLAYER_END);
         }
+
     }
 
     @SubscribeEvent
