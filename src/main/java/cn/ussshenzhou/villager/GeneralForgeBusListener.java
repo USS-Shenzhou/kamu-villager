@@ -64,8 +64,8 @@ public class GeneralForgeBusListener {
         }
     }
 
-    private static final MobSpawnSettings.SpawnerData PILLAGER = new MobSpawnSettings.SpawnerData(EntityType.PILLAGER, 30, 1, 3);
-    private static final MobSpawnSettings.SpawnerData VINDICATOR = new MobSpawnSettings.SpawnerData(EntityType.VINDICATOR, 60, 1, 3);
+    private static final MobSpawnSettings.SpawnerData PILLAGER = new MobSpawnSettings.SpawnerData(EntityType.PILLAGER, 20, 1, 3);
+    private static final MobSpawnSettings.SpawnerData VINDICATOR = new MobSpawnSettings.SpawnerData(EntityType.VINDICATOR, 40, 1, 3);
     private static MobSpawnSettings.SpawnerData FALSE_FALSE_PLAYER = null;
 
     @SubscribeEvent
@@ -77,7 +77,7 @@ public class GeneralForgeBusListener {
             event.addSpawnerData(PILLAGER);
             event.addSpawnerData(VINDICATOR);
             if (FALSE_FALSE_PLAYER == null) {
-                FALSE_FALSE_PLAYER = new MobSpawnSettings.SpawnerData(ModEntityTypes.FALSE_FALSE_PLAYER.get(), 80, 1, 1);
+                FALSE_FALSE_PLAYER = new MobSpawnSettings.SpawnerData(ModEntityTypes.FALSE_FALSE_PLAYER.get(), 70, 1, 1);
             }
             event.addSpawnerData(FALSE_FALSE_PLAYER);
         }
