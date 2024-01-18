@@ -11,6 +11,7 @@ import cn.ussshenzhou.t88.network.NetworkHelper;
 import cn.ussshenzhou.t88.util.InventoryHelper;
 import cn.ussshenzhou.villager.*;
 import cn.ussshenzhou.villager.item.ModItems;
+import cn.ussshenzhou.villager.network.MelorTradeCarrotPacket;
 import cn.ussshenzhou.villager.network.SelfTradePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -118,7 +119,13 @@ public class SelfTradePanel extends TScrollContainer {
                                 return;
                             }
                             Tuple<Integer, Integer> needAndValue = getNeedAndValue(food);
-                            var b = new SelfTradeButton(new ItemStack(item, needAndValue.getA()), new ItemStack(Items.EMERALD, item == Items.CARROT ? 1 : needAndValue.getB()));
+                            var b = new SelfTradeButton(new ItemStack(item, needAndValue.getA()), new ItemStack(Items.EMERALD, needAndValue.getB()));
+                            if (HXYAHelper.isMelor(player) && item == Items.CARROT) {
+                                b.getButton().setOnPress(pButton -> {
+                                    NetworkHelper.sendToServer(new SelfTradePacket(Minecraft.getInstance().player.getUUID(), b.from.getItem(), b.to.getItem()));
+                                    NetworkHelper.sendToServer(new MelorTradeCarrotPacket());
+                                });
+                            }
                             add(b);
                         });
                 add(new SelfTradeButton(new ItemStack(Items.EMERALD, 1), new ItemStack(Items.WHEAT, 1)));

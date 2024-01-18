@@ -12,6 +12,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.PacketSendListener;
@@ -31,6 +32,7 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -149,14 +151,11 @@ public class FalsePlayer extends ServerPlayer {
 
     private Item getRandomArmor(RandomSource r, EquipmentSlot slot) {
         float f = r.nextFloat();
-        float netherite = 0.00f;
-        float diamond = 0.0f;
-        float iron = 0.5f;
+        float diamond = getDiamondFactor();
+        float iron = getIronFactor() + diamond;
         switch (slot) {
             case HEAD:
-                if (f < netherite) {
-                    return Items.NETHERITE_HELMET;
-                } else if (f < diamond) {
+                if (f < diamond) {
                     return Items.DIAMOND_HELMET;
                 } else if (f < iron) {
                     return Items.IRON_HELMET;
@@ -164,9 +163,7 @@ public class FalsePlayer extends ServerPlayer {
                     return null;
                 }
             case CHEST:
-                if (f < netherite) {
-                    return Items.NETHERITE_CHESTPLATE;
-                } else if (f < diamond) {
+                if (f < diamond) {
                     return Items.DIAMOND_CHESTPLATE;
                 } else if (f < iron) {
                     return Items.IRON_CHESTPLATE;
@@ -174,9 +171,7 @@ public class FalsePlayer extends ServerPlayer {
                     return null;
                 }
             case LEGS:
-                if (f < netherite) {
-                    return Items.NETHERITE_LEGGINGS;
-                } else if (f < diamond) {
+                if (f < diamond) {
                     return Items.DIAMOND_LEGGINGS;
                 } else if (f < iron) {
                     return Items.IRON_LEGGINGS;
@@ -184,9 +179,7 @@ public class FalsePlayer extends ServerPlayer {
                     return null;
                 }
             case FEET:
-                if (f < netherite) {
-                    return Items.NETHERITE_BOOTS;
-                } else if (f < diamond) {
+                if (f < diamond) {
                     return Items.DIAMOND_BOOTS;
                 } else if (f < iron) {
                     return Items.IRON_BOOTS;
@@ -200,21 +193,33 @@ public class FalsePlayer extends ServerPlayer {
 
     private Item getRandomWeapon(RandomSource r) {
         float f = r.nextFloat();
-        float netherite = 0.00f;
-        float diamond = 0.0f;
-        float iron = 0.4f;
-        float stone = 0.8f;
-        if (f < netherite) {
-            return Items.NETHERITE_SWORD;
-        } else if (f < diamond) {
+        float diamond = getDiamondFactor() * 0.8f;
+        float iron = getIronFactor() + diamond;
+        float stone = diamond > 0.2 ? 1 : 0.8f;
+        if (f < diamond) {
             return Items.DIAMOND_SWORD;
         } else if (f < iron) {
             return Items.IRON_SWORD;
         } else if (f < stone) {
             return Items.STONE_SWORD;
         } else {
-            return null;
+            return Items.WOODEN_SWORD;
         }
+    }
+
+    private float getDiamondFactor() {
+        return getNumberOfPlayersHave(16) * 0.1f;
+    }
+
+    private float getIronFactor() {
+        return getNumberOfPlayersHave(10) * 0.1f;
+    }
+
+    private int getNumberOfPlayersHave(int threshold) {
+        return (int) Mth.clamp(level().players().stream()
+                        .filter(FalsePlayer::isRealPlayer)
+                        .filter(player -> player.getArmorValue() >= threshold).count(),
+                0, 5);
     }
 
     private static class FakeConnection extends Connection {
