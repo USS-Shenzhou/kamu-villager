@@ -136,7 +136,7 @@ public class VillagerVillager extends Villager implements VillagerFollower{
         if (masterUUID != null) {
             return;
         }
-        level().getNearbyPlayers(TargetingConditions.forNonCombat(), this, this.getBoundingBox().inflate(8))
+        level().getNearbyPlayers(TargetingConditions.forNonCombat(), this, this.getBoundingBox().inflate(6))
                 .stream().filter(player -> this.getSensing().hasLineOfSight(player))
                 .min((p0, p1) -> (int) (this.distanceTo(p0) - this.distanceTo(p1)))
                 .ifPresent(player -> {

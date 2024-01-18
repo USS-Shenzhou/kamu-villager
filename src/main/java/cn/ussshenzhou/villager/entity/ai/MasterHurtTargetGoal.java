@@ -1,9 +1,11 @@
 package cn.ussshenzhou.villager.entity.ai;
 
 import cn.ussshenzhou.villager.entity.VillagerFollower;
+import cn.ussshenzhou.villager.entity.fakeplayer.FalsePlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.EnumSet;
 
@@ -30,12 +32,15 @@ public class MasterHurtTargetGoal extends TargetGoal {
         if (villager.getThis().getRandom().nextFloat() > 0.1f) {
             return false;
         }
-        LivingEntity livingentity = this.villager.getMaster();
-        if (livingentity == null) {
+        LivingEntity master = this.villager.getMaster();
+        if (master == null) {
             return false;
         } else {
-            this.ownerLastHurt = livingentity.getLastHurtMob();
-            int i = livingentity.getLastHurtMobTimestamp();
+            if (master.getLastHurtMob() instanceof Player player && FalsePlayer.isRealPlayer(player)) {
+                return false;
+            }
+            this.ownerLastHurt = master.getLastHurtMob();
+            int i = master.getLastHurtMobTimestamp();
             return i != this.timestamp && this.canAttack(this.ownerLastHurt, TargetingConditions.DEFAULT);
         }
     }

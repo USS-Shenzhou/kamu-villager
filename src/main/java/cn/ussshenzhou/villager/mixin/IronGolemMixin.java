@@ -60,7 +60,7 @@ public class IronGolemMixin extends AbstractGolem implements VillagerFollower {
         if (masterUUID != null) {
             return;
         }
-        level().getNearbyPlayers(TargetingConditions.forNonCombat(), this, this.getBoundingBox().inflate(8))
+        level().getNearbyPlayers(TargetingConditions.forNonCombat(), this, this.getBoundingBox().inflate(5))
                 .stream().filter(player -> this.getSensing().hasLineOfSight(player))
                 .min((p0, p1) -> (int) (this.distanceTo(p0) - this.distanceTo(p1)))
                 .ifPresent(player -> {

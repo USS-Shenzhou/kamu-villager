@@ -4,7 +4,6 @@ import cn.ussshenzhou.t88.task.RepeatTask;
 import cn.ussshenzhou.t88.task.Task;
 import cn.ussshenzhou.t88.task.TaskHelper;
 import cn.ussshenzhou.villager.entity.fakeplayer.events.BotDamageByPlayerEvent;
-import cn.ussshenzhou.villager.entity.fakeplayer.events.BotKilledByPlayerEvent;
 import cn.ussshenzhou.villager.entity.fakeplayer.events.FalsePlayerLocateTargetEvent;
 import cn.ussshenzhou.villager.entity.fakeplayer.utils.*;
 import net.minecraft.core.BlockPos;
@@ -16,7 +15,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.Item;
@@ -58,7 +56,7 @@ public class FalsePlayerTickHelper {
     protected static final Set<Task> TASK_LIST = new HashSet<>();
     private static final Set<FalsePlayer> FALL_DAMAGE_COOLDOWN = new HashSet<>();
 
-    private static final double ATTACK_MOVE_SPEED = 0.15;
+    private static final double ATTACK_MOVE_SPEED = 0.22;
     private static final int ATTACK_SPEED = 7;
 
     public static void remove(FalsePlayer falsePlayer) {
@@ -93,7 +91,10 @@ public class FalsePlayerTickHelper {
 
         if (livingTarget == null) {
             stopMining(falsePlayer);
+            falsePlayer.setTargetPlayer(null);
             return;
+        } else {
+            falsePlayer.setTargetPlayer(livingTarget.getUUID());
         }
 
         LegacyBlockCheck.clutch(falsePlayer, livingTarget);
@@ -1062,10 +1063,10 @@ public class FalsePlayerTickHelper {
                 }*/
 
                 case NEAREST_VULNERABLE_PLAYER: {
-                    for (Player truePlayer : falsePlayer.level().players()) {
-                        if (!(truePlayer instanceof FalsePlayer)) {
-                            if (!(truePlayer.isCreative() || truePlayer.isSpectator()) && truePlayer.distanceToSqr(falsePlayer) <= 64 * 64 && validateCloserEntity(falsePlayer, truePlayer, loc, result)) {
-                                result = truePlayer;
+                    for (Player player : falsePlayer.level().players()) {
+                        if (FalsePlayer.isRealPlayer(player)) {
+                            if (!(player.isCreative() || player.isSpectator()) && player.distanceToSqr(falsePlayer) <= 64 * 64 && validateCloserEntity(falsePlayer, player, loc, result)) {
+                                result = player;
                             }
                         }
                     }
@@ -1389,7 +1390,7 @@ public class FalsePlayerTickHelper {
     }
 
     private static void attack(FalsePlayer bot, LivingEntity target, Vec3 loc) {
-        if (target instanceof Player player && (player.isCreative() || player.isSpectator()) || loc.distanceToSqr(target.position()) >= 1.5f * 1.5f) {
+        if (target instanceof Player player && (player.isCreative() || player.isSpectator()) || loc.distanceToSqr(target.position()) > 1.8f * 1.8f) {
             return;
         }
         bot.attack(target);

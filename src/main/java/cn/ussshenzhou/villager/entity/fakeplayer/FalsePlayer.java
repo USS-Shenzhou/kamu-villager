@@ -315,7 +315,7 @@ public class FalsePlayer extends ServerPlayer {
             --noFallTicks;
         }
         if (checkGround()) {
-            if (groundTicks < 5) {
+            if (groundTicks < 10) {
                 groundTicks++;
             }
         } else {
@@ -429,12 +429,15 @@ public class FalsePlayer extends ServerPlayer {
         } else {
             if (groundTicks != 0) {
                 velocity.y = 0;
-                addFriction(0.5);
+                if (this.targetPlayer == null) {
+                    addFriction(0.5);
+                }
                 y = 0;
             } else {
                 y = velocity.y;
                 velocity.y = Math.max(y - 0.1, -3.5);
             }
+
         }
 
         this.move(MoverType.SELF, new Vec3(velocity.x, y, velocity.z));

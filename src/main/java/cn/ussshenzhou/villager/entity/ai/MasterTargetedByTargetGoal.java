@@ -1,10 +1,12 @@
 package cn.ussshenzhou.villager.entity.ai;
 
 import cn.ussshenzhou.villager.entity.VillagerFollower;
+import cn.ussshenzhou.villager.entity.fakeplayer.FalsePlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.monster.piglin.Piglin;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
 
@@ -37,7 +39,7 @@ public class MasterTargetedByTargetGoal extends TargetGoal {
         if (event.getOriginalTarget() == villager.getMaster()) {
             targets.removeIf(livingEntityWeakReference -> livingEntityWeakReference.get() == otherEntity);
         }
-        if (otherEntity instanceof Piglin) {
+        if (otherEntity instanceof Piglin || (otherEntity instanceof Player player && FalsePlayer.isRealPlayer(player))) {
             return;
         }
         if (event.getNewTarget() == villager.getMaster()) {
