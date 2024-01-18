@@ -30,15 +30,18 @@ public class MasterTargetedByTargetGoal extends TargetGoal {
     }
 
     protected void onMasterTargetedBy(LivingChangeTargetEvent event) {
-        var entity = event.getEntity();
-        if (event.getOriginalTarget() == villager.getMaster()) {
-            targets.removeIf(livingEntityWeakReference -> livingEntityWeakReference.get() == entity);
+        var otherEntity = event.getEntity();
+        if (event.getOriginalTarget() == null) {
+            return;
         }
-        if (entity instanceof Piglin) {
+        if (event.getOriginalTarget() == villager.getMaster()) {
+            targets.removeIf(livingEntityWeakReference -> livingEntityWeakReference.get() == otherEntity);
+        }
+        if (otherEntity instanceof Piglin) {
             return;
         }
         if (event.getNewTarget() == villager.getMaster()) {
-            targets.add(new WeakReference<>(entity));
+            targets.add(new WeakReference<>(otherEntity));
         }
     }
 
