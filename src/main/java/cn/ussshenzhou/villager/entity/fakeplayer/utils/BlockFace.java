@@ -10,6 +10,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Vector;
 
+/**
+ * @author USS_Shenzhou
+ * <br/>This file is modified from <a href="https://github.com/HorseNuggets/TerminatorPlus">TerminatorPlus</a> under EPL-2.0 license, and can be distributed under EPL-2.0 license only.
+ */
 public enum BlockFace {
     NORTH(0, 0, -1),
     EAST(1, 0, 0),

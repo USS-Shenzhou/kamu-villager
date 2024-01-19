@@ -6,6 +6,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author USS_Shenzhou
+ * <br/>This file is modified from <a href="https://github.com/HorseNuggets/TerminatorPlus">TerminatorPlus</a> under EPL-2.0 license, and can be distributed under EPL-2.0 license only.
+ */
 public enum LegacyLevel {
     ABOVE(0, 2, 0),
     BELOW(0, -1, 0),

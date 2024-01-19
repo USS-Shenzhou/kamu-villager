@@ -12,6 +12,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * @author USS_Shenzhou
+ * <br/>This file is modified from <a href="https://github.com/HorseNuggets/TerminatorPlus">TerminatorPlus</a> under EPL-2.0 license, and can be distributed under EPL-2.0 license only.
+ */
 public class BotUtils {
 
     public static final Set<Block> NO_FALL = new HashSet<>(Arrays.asList(

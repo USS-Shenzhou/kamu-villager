@@ -9,6 +9,10 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author USS_Shenzhou
+ * <br/>This file is modified from <a href="https://github.com/HorseNuggets/TerminatorPlus">TerminatorPlus</a> under EPL-2.0 license, and can be distributed under EPL-2.0 license only.
+ */
 public class MojangAPI {
 
     private static final boolean CACHE_ENABLED = false;

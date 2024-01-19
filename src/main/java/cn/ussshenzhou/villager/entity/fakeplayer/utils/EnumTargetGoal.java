@@ -3,6 +3,10 @@ package cn.ussshenzhou.villager.entity.fakeplayer.utils;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author USS_Shenzhou
+ * <br/>This file is modified from <a href="https://github.com/HorseNuggets/TerminatorPlus">TerminatorPlus</a> under EPL-2.0 license, and can be distributed under EPL-2.0 license only.
+ */
 public enum EnumTargetGoal {
     NEAREST_VULNERABLE_PLAYER("Locate the nearest real player that is in either Survival or Adventure mode."),
     NEAREST_PLAYER("Locate the nearest real online player, despite the gamemode."),
