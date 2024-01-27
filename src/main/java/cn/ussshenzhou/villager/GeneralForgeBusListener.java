@@ -1,6 +1,7 @@
 package cn.ussshenzhou.villager;
 
 import cn.ussshenzhou.t88.network.NetworkHelper;
+import cn.ussshenzhou.t88.task.TaskHelper;
 import cn.ussshenzhou.t88.util.InventoryHelper;
 import cn.ussshenzhou.villager.entity.FalseFalsePlayer;
 import cn.ussshenzhou.villager.entity.ModEntityTypes;
@@ -17,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.npc.Villager;
@@ -35,6 +37,7 @@ import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
 import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
 import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
 import net.neoforged.neoforge.event.entity.player.SleepingTimeCheckEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
@@ -112,12 +115,13 @@ public class GeneralForgeBusListener {
         var playerB = level.getNearbyPlayers(TargetingConditions.DEFAULT, playerA, playerA.getBoundingBox().inflate(2))
                 .stream()
                 .filter(player -> player != playerA)
+                .filter(LivingEntity::isSleeping)
                 .min((pA, pB) -> (int) ((playerA.distanceToSqr(pA) - playerA.distanceToSqr(pB)) * 100))
                 .orElse(null);
-        if (playerB == null || !playerB.isSleeping()) {
+        if (playerB == null) {
             return;
         }
-        playerB.stopSleeping();
+        TaskHelper.addServerTask(playerB::stopSleeping, 5);
         var pos = playerA.position().add(playerB.position()).multiply(0.5, 0.5, 0.5);
         var villager = new VillagerVillager(ModEntityTypes.VILLAGER_VILLAGER.get(), level);
         //villager.finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(playerB.blockPosition()), MobSpawnType.BREEDING, null, null);
@@ -280,6 +284,7 @@ public class GeneralForgeBusListener {
     public static final ItemStack CEN_AXE = new ItemStack(Items.DIAMOND_AXE);
 
     static {
+        CEN_AXE.enchant(Enchantments.MOB_LOOTING, 2);
         CEN_AXE.enchant(Enchantments.SHARPNESS, 6);
         CEN_AXE.getOrCreateTag().putBoolean("Unbreakable", true);
         var l = new ListTag();
@@ -322,7 +327,7 @@ public class GeneralForgeBusListener {
     public static final ItemStack MELOR_SWORD = new ItemStack(Items.DIAMOND_SWORD);
 
     static {
-        MELOR_SWORD.enchant(Enchantments.MOB_LOOTING, 4);
+        MELOR_SWORD.enchant(Enchantments.MOB_LOOTING, 2);
         MELOR_SWORD.enchant(Enchantments.SHARPNESS, 6);
         MELOR_SWORD.getOrCreateTag().putBoolean("Unbreakable", true);
         var l = new ListTag();
@@ -364,5 +369,16 @@ public class GeneralForgeBusListener {
                         .forEach(nev::addItem);
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void evenItemFrame(PlayerInteractEvent.EntityInteract event) {
+        for (ItemStack i : UNDROPPABLE) {
+            if (ItemStack.isSameItemSameTags(i, event.getItemStack())) {
+                event.setCanceled(true);
+                break;
+            }
+        }
+
     }
 }

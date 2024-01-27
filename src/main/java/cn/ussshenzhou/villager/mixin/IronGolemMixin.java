@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -54,6 +56,19 @@ public class IronGolemMixin extends AbstractGolem implements VillagerFollower {
     public void tick() {
         super.tick();
         tryFollow();
+        checkBreath();
+    }
+
+    private void checkBreath() {
+        if (this.isInWall()) {
+            assert masterUUID != null;
+            var master = getMaster();
+            if (master == null) {
+                return;
+            }
+            var pos = master.position();
+            this.teleportTo((ServerLevel) master.level(), pos.x, pos.y, pos.z, Set.of(), this.getYRot(), this.getXRot());
+        }
     }
 
     private void tryFollow() {

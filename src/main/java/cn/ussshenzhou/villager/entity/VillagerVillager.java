@@ -20,6 +20,7 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -36,6 +37,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.fluids.FluidType;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
@@ -47,11 +49,12 @@ import java.util.UUID;
 /**
  * @author USS_Shenzhou
  */
-public class VillagerVillager extends Villager implements VillagerFollower{
+public class VillagerVillager extends Villager implements VillagerFollower {
     @Nullable
     private UUID masterUUID = null;
     private Command command = null;
 
+    private final FloatGoal floatGoal = new FloatGoal(this);
     private final MeleeAttackGoal attackGoal = new MeleeAttackGoal(this, 0.85f, true);
     private final FollowMasterGoal followMasterGoal = new FollowMasterGoal(this, 0.75f, 5, 160, false);
     private final MasterTargetedByTargetGoal masterTargetedByTargetGoal = new MasterTargetedByTargetGoal(this);
@@ -84,7 +87,9 @@ public class VillagerVillager extends Villager implements VillagerFollower{
         if (level().isClientSide || masterUUID == null) {
             return;
         }
-        clutch();
+        if (command == Command.DIG && digDirection != null && digDirection.y > -0.2) {
+            clutch();
+        }
         checkBreath();
     }
 
@@ -158,6 +163,7 @@ public class VillagerVillager extends Villager implements VillagerFollower{
         this.targetSelector.lockedFlags.clear();
         this.setTarget(null);
         this.digDirection = null;
+        goalSelector.addGoal(0, floatGoal);
         switch (command) {
             case FOLLOW -> {
                 masterTargetedByTargetGoal.init();
@@ -234,6 +240,9 @@ public class VillagerVillager extends Villager implements VillagerFollower{
 
     @Override
     public boolean wantsToPickUp(ItemStack pStack) {
+        if (random.nextFloat() < 0.8) {
+            return false;
+        }
         Item item = pStack.getItem();
         return (WANTED_ITEMS.contains(item)
                 || this.acceptItem(pStack)
@@ -301,5 +310,4 @@ public class VillagerVillager extends Villager implements VillagerFollower{
             }
         }
     }
-
 }

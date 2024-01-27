@@ -14,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.SpawnPlacementRegisterEvent;
 
@@ -27,6 +28,7 @@ public class GeneralModBusListener {
     public static void addAttribute(EntityAttributeCreationEvent event) {
         event.put(ModEntityTypes.VILLAGER_VILLAGER.get(), Villager.createAttributes()
                 .add(Attributes.ATTACK_DAMAGE, 1)
+                //.add(NeoForgeMod.SWIM_SPEED.value(), )
                 .build()
         );
         event.put(ModEntityTypes.FALSE_PLAYER.get(), Player.createAttributes().build());
@@ -38,4 +40,6 @@ public class GeneralModBusListener {
     public static void addSpawn(SpawnPlacementRegisterEvent event) {
         event.register(ModEntityTypes.FALSE_FALSE_PLAYER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, FalseFalsePlayer::canSpawn, SpawnPlacementRegisterEvent.Operation.OR);
     }
+
+
 }

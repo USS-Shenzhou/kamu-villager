@@ -49,7 +49,7 @@ public class DigGoal extends Goal {
 
     protected int getBreakTime() {
         var block = villager.level().getBlockState(targetPos);
-        return (int) (block.getDestroySpeed(villager.level(), targetPos) / villager.getMainHandItem().getDestroySpeed(block) * 30 * 0.7f);
+        return (int) (block.getDestroySpeed(villager.level(), targetPos) / villager.getMainHandItem().getDestroySpeed(block) * 30 * 0.5f);
     }
 
     @Override

@@ -202,7 +202,7 @@ public class FalsePlayerTickHelper {
             vector.y = (0);
         }
 
-        vector.normalize().multiply(0.05, 0.05, 0.05);
+        vector = vector.normalize().multiply(0.05, 0.05, 0.05);
         vector.y = (vector.y * 1.2);
 
         if (MINING_ANIM.containsKey(playerNPC)) {
@@ -217,7 +217,7 @@ public class FalsePlayerTickHelper {
             falsePlayer.swim();
         } else {
             vector.y = (0);
-            vector.multiply(0.7, 0.7, 0.7);
+            vector = vector.multiply(0.7, 0.7, 0.7);
         }
 
         falsePlayer.face(target.position());

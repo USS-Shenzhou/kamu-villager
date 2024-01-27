@@ -29,7 +29,7 @@ public class VillagerManager {
     @SubscribeEvent
     public static void tick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
-            PLAYER_AND_VILLAGERS.values().forEach(villagerFollowers -> villagerFollowers.removeIf(villagerFollower -> ((LivingEntity) villagerFollower).isRemoved()));
+            PLAYER_AND_VILLAGERS.values().forEach(villagerFollowers -> villagerFollowers.removeIf(villagerFollower -> ((LivingEntity) villagerFollower).isDeadOrDying()));
         }
     }
 
