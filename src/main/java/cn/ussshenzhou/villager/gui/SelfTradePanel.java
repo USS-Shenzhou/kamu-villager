@@ -39,7 +39,7 @@ public class SelfTradePanel extends TScrollContainer {
     private void initFromProfession() {
         var player = Minecraft.getInstance().player;
         //noinspection DataFlowIssue
-        Profession profession = player.getData(ModDataAttachments.PROFESSION).get();
+        ProfessionContainer.Profession profession = player.getData(ModDataAttachments.PROFESSION).get();
         var inventory = player.getInventory();
         switch (profession) {
             case NITWIT -> add(new TLabel(Component.literal("傻子！"))

@@ -6,12 +6,11 @@ import cn.ussshenzhou.t88.gui.widegt.TItem;
 import cn.ussshenzhou.t88.gui.widegt.TLabel;
 import cn.ussshenzhou.t88.gui.widegt.TPanel;
 import cn.ussshenzhou.villager.ModDataAttachments;
-import cn.ussshenzhou.villager.Profession;
+import cn.ussshenzhou.villager.ProfessionContainer;
 import cn.ussshenzhou.villager.input.KeyInputListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 
 /**
@@ -21,7 +20,7 @@ public class ProfessionHud extends TPanel {
     private final TItem icon;
     private final TLabel text;
     private final TLabel pickHint;
-    private Profession profession;
+    private ProfessionContainer.Profession profession;
     private static final int HEIGHT = 24;
 
     public ProfessionHud() {
@@ -45,7 +44,7 @@ public class ProfessionHud extends TPanel {
     }
 
     public void showPickProfessionHint(Block block) {
-        Profession p = Profession.fromBlock(block);
+        ProfessionContainer.Profession p = ProfessionContainer.Profession.fromBlock(block);
         if (p != null) {
             if (p == profession) {
                 hidePickProfessionHint();

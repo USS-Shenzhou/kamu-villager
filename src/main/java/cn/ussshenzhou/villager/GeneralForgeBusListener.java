@@ -1,5 +1,7 @@
 package cn.ussshenzhou.villager;
 
+import cn.ussshenzhou.t88.T88;
+import cn.ussshenzhou.t88.config.ConfigHelper;
 import cn.ussshenzhou.t88.network.NetworkHelper;
 import cn.ussshenzhou.t88.task.TaskHelper;
 import cn.ussshenzhou.t88.util.InventoryHelper;
@@ -31,6 +33,7 @@ import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
@@ -50,10 +53,45 @@ import java.util.List;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class GeneralForgeBusListener {
 
+    /*@SubscribeEvent
+    public static void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
+        TaskHelper.addServerTask(() -> {
+            ConfigHelper.loadConfig(new ProfessionContainer());
+            NetworkHelper.sendToServer(new ChooseProfessionPacket(event.getPlayer(), ConfigHelper.getConfigRead(ProfessionContainer.class).get()));
+        }, 10);
+    }
+
+    @SubscribeEvent
+    public static void onExit(ClientPlayerNetworkEvent.LoggingOut event) {
+        var player = event.getPlayer();
+        var p = player == null ? ProfessionContainer.Profession.NITWIT : player.getData(ModDataAttachments.PROFESSION).get();
+        ConfigHelper.loadConfig(new ProfessionContainer());
+        ConfigHelper.getConfigWrite(ProfessionContainer.class, professionContainer -> professionContainer.set(p));
+    }*/
+
+    @SubscribeEvent
+    public static void onDeath(PlayerEvent.Clone event) {
+        if (event.isWasDeath() && event.getOriginal().hasData(ModDataAttachments.PROFESSION)) {
+            event.getEntity().getData(ModDataAttachments.PROFESSION).set(event.getOriginal().getData(ModDataAttachments.PROFESSION).get());
+            var player = event.getEntity();
+            if (!player.level().isClientSide) {
+                NetworkHelper.sendToPlayer((ServerPlayer) player, new ChooseProfessionPacket(player, player.getData(ModDataAttachments.PROFESSION).get()));
+            }
+        }
+    }
+
     @SubscribeEvent
     public static void onPlayerCreate(PlayerEvent.PlayerLoggedInEvent event) {
         if (!event.getEntity().hasData(ModDataAttachments.PROFESSION)) {
-            event.getEntity().setData(ModDataAttachments.PROFESSION, Profession.NITWIT);
+            event.getEntity().setData(ModDataAttachments.PROFESSION, new ProfessionContainer());
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
+        var player = event.getEntity();
+        if (!player.level().isClientSide) {
+            NetworkHelper.sendToPlayer((ServerPlayer) player, new ChooseProfessionPacket(player, player.getData(ModDataAttachments.PROFESSION).get()));
         }
     }
 
@@ -112,7 +150,7 @@ public class GeneralForgeBusListener {
         if (level.isClientSide) {
             return;
         }
-        var playerB = level.getNearbyPlayers(TargetingConditions.DEFAULT, playerA, playerA.getBoundingBox().inflate(2))
+        var playerB = level.getNearbyPlayers(TargetingConditions.DEFAULT, playerA, playerA.getBoundingBox().inflate(3))
                 .stream()
                 .filter(player -> player != playerA)
                 .filter(LivingEntity::isSleeping)
@@ -121,8 +159,12 @@ public class GeneralForgeBusListener {
         if (playerB == null) {
             return;
         }
-        TaskHelper.addServerTask(playerB::stopSleeping, 5);
-        var pos = playerA.position().add(playerB.position()).multiply(0.5, 0.5, 0.5);
+        TaskHelper.addServerTask(() -> {
+            if (playerB.isSleeping()) {
+                playerB.stopSleeping();
+            }
+        }, 5);
+        var pos = playerB.position();
         var villager = new VillagerVillager(ModEntityTypes.VILLAGER_VILLAGER.get(), level);
         //villager.finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(playerB.blockPosition()), MobSpawnType.BREEDING, null, null);
         villager.setPos(pos);

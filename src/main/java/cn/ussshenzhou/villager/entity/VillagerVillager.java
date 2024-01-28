@@ -84,7 +84,10 @@ public class VillagerVillager extends Villager implements VillagerFollower {
             }
         }
         tryFollow();
-        if (level().isClientSide || masterUUID == null) {
+        if (level().isClientSide) {
+            return;
+        }
+        if (masterUUID == null) {
             return;
         }
         if (command == Command.DIG && digDirection != null && digDirection.y > -0.2) {
@@ -181,7 +184,10 @@ public class VillagerVillager extends Villager implements VillagerFollower {
             case DIG -> {
                 goalSelector.addGoal(0, digGoal);
                 var player = this.getMaster();
-                var dir = player.getLookAngle().toVector3f();
+                if (player == null) {
+                    return;
+                }
+                Vector3f dir = player.getLookAngle().toVector3f();
                 if (dir.y < -0.8) {
                     dir.mul(0, 1, 0);
                 } else {
