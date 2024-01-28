@@ -63,12 +63,14 @@ public class VillagerArmorLayer<T extends LivingEntity> extends RenderLayer<T, V
     public static final ResourceLocation IRON_ARMOR = new ResourceLocation(Villager.MOD_ID, "textures/entity/iron_armor.png");
     public static final ResourceLocation DIAMOND_ARMOR = new ResourceLocation(Villager.MOD_ID, "textures/entity/diamond_armor.png");
     public static final ResourceLocation NETHERITE_ARMOR = new ResourceLocation(Villager.MOD_ID, "textures/entity/netherite_armor.png");
+    public static final ResourceLocation GOLD_ARMOR = new ResourceLocation(Villager.MOD_ID, "textures/entity/gold_armor.png");
 
     private static ResourceLocation getTexture(ArmorItem item) {
         return switch ((ArmorMaterials) item.getMaterial()) {
             case IRON -> IRON_ARMOR;
             case DIAMOND -> DIAMOND_ARMOR;
             case NETHERITE -> NETHERITE_ARMOR;
+            case GOLD -> GOLD_ARMOR;
             default -> null;
         };
     }
