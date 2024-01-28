@@ -60,6 +60,9 @@ public class IronGolemMixin extends AbstractGolem implements VillagerFollower {
     }
 
     private void checkBreath() {
+        if (this.level().isClientSide) {
+            return;
+        }
         if (this.isInWall()) {
             assert masterUUID != null;
             var master = getMaster();
